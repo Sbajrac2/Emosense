@@ -1,6 +1,7 @@
 
 
 import React from 'react';
+import { Image } from 'react-native'; 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -15,6 +16,7 @@ import MatchingExerciseScreen from '../screens/MatchingExerciseScreen';
 import LessonSummaryScreen from '../screens/LessonSummaryScreen';
 
 import { COLORS, FONTS } from '../constants/theme';
+import { IMAGES } from '../constants/images';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -93,20 +95,47 @@ const SimpleIcon = ({ name, size, color }) => {
 // Bottom Tab Navigator
 function TabNavigator() {
   return (
+    // <Tab.Navigator
+    //   screenOptions={({ route }) => ({
+    //     tabBarIcon: ({ focused, color, size }) => {
+    //       let iconName;
+
+    //       if (route.name === 'Activities') {
+    //         iconName = focused ? 'home' : 'home-outline';
+    //       } else if (route.name === 'Lessons') {
+    //         iconName = focused ? 'document-text' : 'document-text-outline';
+    //       } else if (route.name === 'Profile') {
+    //         iconName = focused ? 'person' : 'person-outline';
+    //       }
+
+    //       return <SimpleIcon name={iconName} size={size} color={color} />;
+    //     },
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
+          let iconSource;
 
+          // Use PNG images instead of emojis
           if (route.name === 'Activities') {
-            iconName = focused ? 'home' : 'home-outline';
+            iconSource = IMAGES.bottomNavActivities;
           } else if (route.name === 'Lessons') {
-            iconName = focused ? 'document-text' : 'document-text-outline';
+            iconSource = IMAGES.bottomNavLessons;
           } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
+            iconSource = IMAGES.bottomNavProfile;
           }
 
-          return <SimpleIcon name={iconName} size={size} color={color} />;
+          return (
+            <Image
+              source={iconSource}
+              style={{
+                width: size,
+                height: size,
+                tintColor: focused ? COLORS.darkBlue : COLORS.grey,
+                resizeMode: 'contain',
+                marginBottom: -3,
+              }}
+            />
+          );
         },
         tabBarActiveTintColor: COLORS.darkBlue,
         tabBarInactiveTintColor: COLORS.grey,

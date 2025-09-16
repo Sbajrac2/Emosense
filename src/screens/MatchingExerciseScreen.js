@@ -14,11 +14,11 @@ import { IMAGES } from '../constants/images';
 
 
 const { width } = Dimensions.get('window');
-export const IMAGES = {
-  hint: require('../assets/hint.png'),
-  help: require('../assets/help.png'),
-  // …other images
-};
+// export const IMAGES = {
+//   hint: require('../assets/hint.png'),
+//   help: require('../assets/help.png'),
+//   // …other images
+// };
 
 export default function MatchingExerciseScreen({ navigation, route }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
