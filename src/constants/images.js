@@ -9,6 +9,10 @@ export const IMAGES = {
     bottomNavLessons: require('../../assets/images/lesson.png'),
     bottomNavProfile: require('../../assets/images/profile.png'),
     
+    // UI icons
+    hint: require('../../assets/images/hint.png'),
+    help: require('../../assets/images/help.png'),
+    
     // Emoji faces per Figma-like order
     emoji_angry: require('../../assets/images/3.png'),
     emoji_worried: require('../../assets/images/4.png'),

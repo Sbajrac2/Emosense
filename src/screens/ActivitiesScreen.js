@@ -8,104 +8,93 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import SimpleIcon from '../components/SimpleIcon';
-import { COLORS, SIZES, FONTS, SHADOWS } from '../constants/theme';
+import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
 
 export default function ActivitiesScreen({ navigation }) {
+  // Activities with associated lessonId
   const toDoActivities = [
     {
       id: 1,
-      title: 'Activity Name',
-      dueDate: 'Due Date',
-      assignedBy: 'Teacher Name',
-      avatar: IMAGES.photo_girl, // 7.png - blonde hair
+      title: 'Activity 1',
+      dueDate: 'Sept 20',
+      assignedBy: 'Ms. Lisa',
+      avatar: IMAGES.photo_girl,
+      lessonId: 1,
     },
     {
       id: 2,
-      title: 'Activity Name',
-      dueDate: 'Due Date',
-      assignedBy: 'Teacher Name',
-      avatar: IMAGES.photo_boy, // 8.png - reddish-brown hair
+      title: 'Activity 2',
+      dueDate: 'Sept 22',
+      assignedBy: 'Mr. John',
+      avatar: IMAGES.photo_boy,
+      lessonId: 2,
     },
   ];
 
   const completedActivities = [
     {
       id: 3,
-      title: 'Activity Name',
-      dueDate: 'Due Date',
-      assignedBy: 'Teacher Name',
-      avatar: IMAGES.photo_girl, // 7.png - blonde hair
+      title: 'Activity 3',
+      dueDate: 'Sept 15',
+      assignedBy: 'Mrs. Kate',
+      avatar: IMAGES.photo_girl,
+      lessonId: 3,
     },
     {
       id: 4,
-      title: 'Activity Name',
-      dueDate: 'Due Date',
-      assignedBy: 'Teacher Name',
-      avatar: IMAGES.photo_man, // 10.png - brown curly hair
+      title: 'Activity 4',
+      dueDate: 'Sept 18',
+      assignedBy: 'Mr. Mike',
+      avatar: IMAGES.photo_man,
+      lessonId: 4,
     },
   ];
+
+  const handleActivityPress = (activity) => {
+    // Navigate directly to MatchingExercise screen with lessonId
+    navigation.navigate('MatchingExercise', { lessonId: activity.lessonId });
+  };
+
+  const renderActivityCard = (activity) => (
+    <TouchableOpacity
+      key={activity.id}
+      style={styles.activityCard}
+      onPress={() => handleActivityPress(activity)}
+    >
+      <View style={styles.activityLeft}>
+        <Text style={styles.activityTitle}>{activity.title}</Text>
+        <Text style={styles.activityDueDate}>{activity.dueDate}</Text>
+      </View>
+      <View style={styles.activityRight}>
+        <Text style={styles.assignedByText}>Assigned by:</Text>
+        <View style={styles.teacherInfo}>
+          <Image source={activity.avatar} style={styles.teacherAvatar} />
+          <Text style={styles.teacherName}>{activity.assignedBy}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {/* Header Section */}
+          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Activities</Text>
             <Text style={styles.headerSubtitle}>To Do</Text>
           </View>
 
-          {/* To Do Activities Section */}
+          {/* To Do Activities */}
           <View style={styles.toDoSection}>
-            {toDoActivities.map((activity) => (
-              <TouchableOpacity
-                key={activity.id}
-                style={styles.activityCard}
-                onPress={() => {
-                  // Handle activity press
-                }}
-              >
-                <View style={styles.activityLeft}>
-                  <Text style={styles.activityTitle}>{activity.title}</Text>
-                  <Text style={styles.activityDueDate}>{activity.dueDate}</Text>
-                </View>
-                <View style={styles.activityRight}>
-                  <Text style={styles.assignedByText}>Assigned by:</Text>
-                  <View style={styles.teacherInfo}>
-                    <Image source={activity.avatar} style={styles.teacherAvatar} />
-                    <Text style={styles.teacherName}>{activity.assignedBy}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+            {toDoActivities.map(renderActivityCard)}
           </View>
 
-          {/* Completed Activities Section */}
+          {/* Completed Activities */}
           <View style={styles.completedSection}>
             <Text style={styles.completedTitle}>Completed Activities</Text>
-            {completedActivities.map((activity) => (
-              <TouchableOpacity
-                key={activity.id}
-                style={styles.activityCard}
-                onPress={() => {
-                  // Handle activity press
-                }}
-              >
-                <View style={styles.activityLeft}>
-                  <Text style={styles.activityTitle}>{activity.title}</Text>
-                  <Text style={styles.activityDueDate}>{activity.dueDate}</Text>
-                </View>
-                <View style={styles.activityRight}>
-                  <Text style={styles.assignedByText}>Assigned by:</Text>
-                  <View style={styles.teacherInfo}>
-                    <Image source={activity.avatar} style={styles.teacherAvatar} />
-                    <Text style={styles.teacherName}>{activity.assignedBy}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+            {completedActivities.map(renderActivityCard)}
           </View>
         </View>
       </ScrollView>
@@ -125,6 +114,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: SIZES.padding,
     paddingTop: SIZES.padding,
+    paddingBottom: SIZES.padding,
   },
   header: {
     backgroundColor: COLORS.lightGreen,

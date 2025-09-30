@@ -9,8 +9,8 @@ import { Text } from 'react-native';
 
 // Import screens
 import LoginScreen from '../screens/LoginScreen';
-import ActivitiesScreen from '../screens/ActivitiesScreen';
 import LessonsScreen from '../screens/LessonsScreen';
+import ActivitiesScreen from '../screens/ActivitiesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import MatchingExerciseScreen from '../screens/MatchingExerciseScreen';
 import LessonSummaryScreen from '../screens/LessonSummaryScreen';
@@ -21,76 +21,7 @@ import { IMAGES } from '../constants/images';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Simple icon component for web compatibility
-const SimpleIcon = ({ name, size, color }) => {
-  const getIconText = (iconName) => {
-    switch (iconName) {
-      case 'home':
-      case 'home-outline':
-        return '🏠';
-      case 'document-text':
-      case 'document-text-outline':
-        return '📚';
-      case 'person':
-      case 'person-outline':
-        return '👤';
-      case 'chevron-back':
-        return '←';
-      case 'chevron-forward':
-        return '→';
-      case 'checkmark':
-        return '✓';
-      case 'play':
-        return '▶';
-      case 'lock-closed':
-        return '🔒';
-      case 'star':
-        return '⭐';
-      case 'bulb':
-        return '💡';
-      case 'help-circle':
-        return '❓';
-      case 'checkmark-circle':
-        return '✅';
-      case 'play-circle':
-        return '▶️';
-      case 'log-out':
-        return '🚪';
-      case 'notifications':
-        return '🔔';
-      case 'volume-high':
-        return '🔊';
-      case 'help-circle':
-        return '❓';
-      case 'information-circle':
-        return 'ℹ️';
-      case 'chevron-forward':
-        return '→';
-      case 'camera':
-        return '📷';
-      case 'book':
-        return '📖';
-      case 'color-palette':
-        return '🎨';
-      case 'flame':
-        return '🔥';
-      case 'trophy':
-        return '🏆';
-      case 'time':
-        return '⏰';
-      case 'medal':
-        return '🏅';
-      default:
-        return '•';
-    }
-  };
-
-  return (
-    <Text style={{ fontSize: size, color: color, ...FONTS.regular }}>
-      {getIconText(name)}
-    </Text>
-  );
-};
+import SimpleIcon from '../components/SimpleIcon';
 
 // Bottom Tab Navigator
 function TabNavigator() {
@@ -111,6 +42,7 @@ function TabNavigator() {
     //       return <SimpleIcon name={iconName} size={size} color={color} />;
     //     },
     <Tab.Navigator
+      initialRouteName="Lessons"
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconSource;
@@ -130,9 +62,9 @@ function TabNavigator() {
               style={{
                 width: size,
                 height: size,
-                tintColor: focused ? COLORS.darkBlue : COLORS.grey,
                 resizeMode: 'contain',
                 marginBottom: -3,
+                opacity: focused ? 1 : 0.6,
               }}
             />
           );
@@ -163,6 +95,7 @@ function TabNavigator() {
           tabBarLabel: 'Lessons',
         }}
       />
+    
       <Tab.Screen 
         name="Profile" 
         component={ProfileScreen}
