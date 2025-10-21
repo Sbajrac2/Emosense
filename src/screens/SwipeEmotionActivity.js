@@ -1,38 +1,83 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, PanResponder, Animated, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, PanResponder, Animated, Image, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
+import SpeakerButton from '../components/SpeakerButton';
 import { COLORS, SIZES, FONTS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
+import TTS from '../utils/textToSpeech';
 
 const { width } = Dimensions.get('window');
 
-export default function SwipeEmotionActivity({ navigation }) {
+export default function SwipeEmotionActivity({ navigation, route }) {
+  const { emotion } = route.params || {};
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showHelpMessage, setShowHelpMessage] = useState(false);
   const [showHintMessage, setShowHintMessage] = useState(false);
+  const [attempts, setAttempts] = useState(0);
   const pan = new Animated.ValueXY();
 
-  const questions = [
-    { image: require('../../assets/images/Happy.png'), emotion: 'Happy', correctSide: 'right', hint: 'Happy emotions are positive - swipe right!' },
-    { image: require('../../assets/images/Sad.png'), emotion: 'Sad', correctSide: 'left', hint: 'Sad is a negative emotion - swipe left!' },
-    { image: require('../../assets/images/Excited.png'), emotion: 'Excited', correctSide: 'right', hint: 'Excitement is positive - swipe right!' },
-  ];
+  const getQuestionsForEmotion = (targetEmotion) => {
+    const allQuestions = {
+      happy: [
+        { image: require('../../assets/images/Happy.png'), emotion: 'Happy', correctSide: 'right', hint: 'Happy is positive - swipe right!' },
+        { image: require('../../assets/images/Excited.png'), emotion: 'Excited', correctSide: 'right', hint: 'Excited is positive - swipe right!' },
+        { image: IMAGES.angry_female_1, emotion: 'Not Happy', correctSide: 'left', hint: 'This is not happy - swipe left!' },
+      ],
+      angry: [
+        { image: IMAGES.angry_female_1, emotion: 'Angry', correctSide: 'left', hint: 'Angry is negative - swipe left!' },
+        { image: IMAGES.angry_male_1, emotion: 'Mad', correctSide: 'left', hint: 'Mad is negative - swipe left!' },
+        { image: IMAGES.angry_female_2, emotion: 'Upset', correctSide: 'left', hint: 'Upset is negative - swipe left!' },
+        { image: IMAGES.angry_male_2, emotion: 'Frustrated', correctSide: 'left', hint: 'Frustrated is negative - swipe left!' },
+        { image: require('../../assets/images/Happy.png'), emotion: 'Not Angry', correctSide: 'right', hint: 'This is not angry - swipe right!' },
+      ],
+      sad: [
+        { image: require('../../assets/images/Sad.png'), emotion: 'Sad', correctSide: 'left', hint: 'Sad is negative - swipe left!' },
+        { image: IMAGES.angry_female_3, emotion: 'Unhappy', correctSide: 'left', hint: 'Unhappy is negative - swipe left!' },
+        { image: require('../../assets/images/Happy.png'), emotion: 'Not Sad', correctSide: 'right', hint: 'This is not sad - swipe right!' },
+      ],
+      mixed: [
+        { image: require('../../assets/images/Happy.png'), emotion: 'Happy', correctSide: 'right', hint: 'Happy is positive - swipe right!' },
+        { image: require('../../assets/images/Sad.png'), emotion: 'Sad', correctSide: 'left', hint: 'Sad is negative - swipe left!' },
+        { image: IMAGES.angry_female_1, emotion: 'Angry', correctSide: 'left', hint: 'Angry is negative - swipe left!' },
+        { image: IMAGES.angry_male_1, emotion: 'Mad', correctSide: 'left', hint: 'Mad is negative - swipe left!' },
+        { image: require('../../assets/images/Excited.png'), emotion: 'Excited', correctSide: 'right', hint: 'Excited is positive - swipe right!' },
+      ]
+    };
+    return allQuestions[targetEmotion] || allQuestions.mixed;
+  };
+  
+  const questions = getQuestionsForEmotion(emotion);
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: () => true,
     onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false }),
-    onPanResponderRelease: (evt, gestureState) => {
+    onPanResponderRelease: async (evt, gestureState) => {
       if (Math.abs(gestureState.dx) > 100) {
         const swipeDirection = gestureState.dx > 0 ? 'right' : 'left';
         const isCorrect = swipeDirection === questions[currentQuestion].correctSide;
         
-        if (isCorrect) setScore(score + 1);
-        
-        if (currentQuestion < questions.length - 1) {
-          setCurrentQuestion(currentQuestion + 1);
-          pan.setValue({ x: 0, y: 0 });
+        if (isCorrect) {
+          setScore(score + 1);
+          await TTS.speakFeedback('Correct!', true);
+          
+          if (currentQuestion < questions.length - 1) {
+            setCurrentQuestion(currentQuestion + 1);
+            setAttempts(0);
+            pan.setValue({ x: 0, y: 0 });
+          } else {
+            navigation.navigate('LessonSummary', { 
+              score, 
+              totalQuestions: questions.length, 
+              lessonTitle: 'Swipe Challenge',
+              source: emotion ? 'activities' : 'lessons'
+            });
+          }
         } else {
-          navigation.navigate('LessonSummary', { score, totalQuestions: questions.length, lessonTitle: 'Swipe Challenge' });
+          await TTS.speakFeedback('Try again!', false);
+          await TTS.speakHint(questions[currentQuestion].hint);
+          setShowHintMessage(true);
+          setAttempts(attempts + 1);
+          Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
         }
       } else {
         Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
@@ -46,7 +91,8 @@ export default function SwipeEmotionActivity({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
         <View style={styles.topBar}>
           <TouchableOpacity onPress={() => setShowHintMessage(true)}>
             <Image source={IMAGES.hint} style={styles.topBarIcon} />
@@ -79,7 +125,15 @@ export default function SwipeEmotionActivity({ navigation }) {
           </View>
         )}
 
-        <Text style={styles.title}>Swipe the card to match emotion</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Swipe cards</Text>
+          <SpeakerButton 
+            text="Swipe the card to match emotion. Right for positive, left for negative" 
+            type="instruction" 
+            size={16} 
+            style={styles.speakerButton}
+          />
+        </View>
         
         <View style={styles.sidesContainer}>
           <View style={styles.leftSide}>
@@ -100,16 +154,18 @@ export default function SwipeEmotionActivity({ navigation }) {
           <Text style={styles.emotionText}>{questions[currentQuestion].emotion}</Text>
         </Animated.View>
 
-        <Text style={styles.instruction}>Swipe left for negative emotions, right for positive</Text>
+        <Text style={styles.instruction}>← Negative | Positive →</Text>
         <Text style={styles.progress}>Card {currentQuestion + 1} of {questions.length}</Text>
-      </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.lightGreen },
-  content: { flex: 1, padding: SIZES.padding, alignItems: 'center', justifyContent: 'center' },
+  scrollView: { flex: 1 },
+  content: { padding: SIZES.padding, alignItems: 'center', paddingBottom: 50 },
   topBar: { position: 'absolute', top: 50, left: 20, right: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', zIndex: 100 },
   homeButton: { backgroundColor: COLORS.white, borderRadius: 20, padding: 8 },
   homeIcon: { fontSize: 20 },
@@ -126,7 +182,9 @@ const styles = StyleSheet.create({
   helpText: { fontSize: SIZES.base, color: COLORS.black, textAlign: 'center' },
   closeButton: { marginTop: 10, padding: 5 },
   closeText: { color: COLORS.darkBlue, fontWeight: 'bold' },
-  title: { fontSize: SIZES.large, color: COLORS.black, marginBottom: 40, textAlign: 'center' },
+  titleContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 40 },
+  title: { fontSize: SIZES.large, color: COLORS.black, textAlign: 'center' },
+  speakerButton: { marginLeft: 8 },
   sidesContainer: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 50 },
   leftSide: { alignItems: 'center', backgroundColor: COLORS.lightBlue, padding: 15, borderRadius: 15, flex: 0.45 },
   rightSide: { alignItems: 'center', backgroundColor: COLORS.yellow, padding: 15, borderRadius: 15, flex: 0.45 },

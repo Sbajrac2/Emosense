@@ -245,7 +245,6 @@
 
 // });
 
-
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
 import { Video } from 'expo-av';
@@ -262,9 +261,6 @@ export default function VideoEmotionActivity({ navigation, route }) {
   const [score, setScore] = useState(0);
   const [attempts, setAttempts] = useState(0);
   const [showSecondChance, setShowSecondChance] = useState(false);
-  
-  const videoWidth = Dimensions.get('window').width * 0.9;
-  const videoHeight = Dimensions.get('window').width < 600 ? 120 : 250;
   
   const getTasksForEmotion = (targetEmotion) => {
     const allTasks = {
@@ -394,6 +390,17 @@ export default function VideoEmotionActivity({ navigation, route }) {
     }
   };
 
+  // Responsive dimensions
+  const screenWidth = Dimensions.get('window').width;
+  const isSmallScreen = screenWidth < 600;
+  const isMediumScreen = screenWidth >= 600 && screenWidth < 1024;
+
+  const videoWidth = isSmallScreen 
+    ? screenWidth * 0.95 
+    : isMediumScreen 
+    ? screenWidth * 0.75 
+    : screenWidth * 0.6;
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -409,27 +416,22 @@ export default function VideoEmotionActivity({ navigation, route }) {
           />
         </View>
         
-        <View style={{
-          width: videoWidth,
-          height: videoHeight,
-          alignSelf: 'center',
-          marginVertical: 20,
-          backgroundColor: COLORS.black,
-          borderRadius: 15,
-        }}>
-          <Video
-            source={tasks[currentTask].video}
-            style={{
-              width: '100%',
-              height: '100%',
-            }}
-            useNativeControls
-            resizeMode="cover"
-            shouldPlay={true}
-            isLooping={true}
-            onLoad={() => setVideoPlayed(true)}
-          />
-        </View>
+        <Video
+          source={tasks[currentTask].video}
+          style={{
+            width: videoWidth,
+            aspectRatio: 2.0,
+            alignSelf: 'center',
+            marginVertical: 20,
+            backgroundColor: COLORS.black,
+            borderRadius: 15,
+          }}
+          useNativeControls
+          resizeMode="contain"
+          shouldPlay={true}
+          isLooping={true}
+          onLoad={() => setVideoPlayed(true)}
+        />
 
         {
           <>
@@ -482,7 +484,6 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: SIZES.padding, paddingVertical: 10, alignItems: 'center' },
   progress: { fontSize: SIZES.base, color: COLORS.grey, marginBottom: 10 },
   title: { fontSize: SIZES.large, color: COLORS.black, marginBottom: 30, textAlign: 'center', ...FONTS.bold },
-
   videoPlaceholder: { width: 230, height: 180, borderRadius: 10 },
   playButton: { position: 'absolute', backgroundColor: 'rgba(0,0,0,0.7)', borderRadius: 30, padding: 15 },
   playIcon: { fontSize: 30 },

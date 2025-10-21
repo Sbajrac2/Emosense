@@ -19,6 +19,7 @@ const getEmotionColor = (emotion) => {
     case 'sad': return COLORS.lightBlue;
     case 'angry': return '#FFB3B3';
     case 'surprised': return COLORS.pink;
+    case 'ai': return '#E8F5E8';
     default: return COLORS.lightGreen;
   }
 };
@@ -175,6 +176,18 @@ export default function ActivitiesScreen({ navigation }) {
         avatar: IMAGES.photo_boy,
       },
     ],
+    ai: [
+      {
+        id: 15,
+        title: 'AI',
+        description: 'AI Learning',
+        fullDescription: 'Learn with AI personalized lessons',
+        type: 'ai_learning',
+        emotion: 'ai',
+        assignedBy: 'AI Teacher',
+        avatar: IMAGES.photo_girl,
+      },
+    ],
   };
 
   const completedActivities = [
@@ -205,6 +218,9 @@ export default function ActivitiesScreen({ navigation }) {
         break;
       case 'emotion_matching':
         navigation.navigate('EmotionMatchingActivity', { emotion: activity.emotion });
+        break;
+      case 'ai_learning':
+        navigation.navigate('AILearningActivity');
         break;
       default:
         navigation.navigate('MatchingExercise', { lessonId: activity.id });

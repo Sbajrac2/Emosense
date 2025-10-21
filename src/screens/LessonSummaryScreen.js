@@ -24,9 +24,17 @@ export default function LessonSummaryScreen({ navigation, route }) {
         routes: [{ name: 'ActivitiesMain' }],
       });
     } else {
+      // Extract lesson number from title and unlock next lesson
+      const lessonMatch = lessonTitle.match(/Lesson (\d+)/);
+      const completedLessonNumber = lessonMatch ? parseInt(lessonMatch[1]) : 1;
+      const nextLesson = completedLessonNumber + 1;
+      
       navigation.reset({
         index: 0,
-        routes: [{ name: 'LessonsMain' }],
+        routes: [{ 
+          name: 'LessonsMain', 
+          params: { lessonCompleted: nextLesson }
+        }],
       });
     }
   };

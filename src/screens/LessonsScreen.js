@@ -20,21 +20,34 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function LessonsScreen({ navigation }) {
   const [currentLesson, setCurrentLesson] = useState(1);
+  
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Check if returning from a completed lesson
+      const completedLesson = navigation.getState()?.routes?.find(route => 
+        route.params?.lessonCompleted
+      );
+      if (completedLesson && completedLesson.params.lessonCompleted > currentLesson) {
+        setCurrentLesson(completedLesson.params.lessonCompleted);
+      }
+    });
+    return unsubscribe;
+  }, [navigation, currentLesson]);
 
   const lessons = [
-    { id: 1, title: 'L1', type: 'emoji', description: 'Emojis', fullTitle: 'Lesson 1: Basic Emojis' },
-    { id: 2, title: 'L2', type: 'cartoon', description: 'Cartoons', fullTitle: 'Lesson 2: Cartoon Emotions' },
-    { id: 3, title: 'L3', type: 'real', description: 'Photos', fullTitle: 'Lesson 3: Real Photos' },
-    { id: 4, title: 'L4', type: 'video', description: 'Videos', fullTitle: 'Lesson 4: Video Emotions' },
-    { id: 5, title: 'L5', type: 'mixed', description: 'Mixed', fullTitle: 'Lesson 5: Mixed Practice' },
-    { id: 6, title: 'Soon', comingSoon: true, fullTitle: 'More lessons coming soon' },
+    { id: 1, title: 'Lesson 1', type: 'emoji', fullTitle: 'Lesson 1: Basic Emojis' },
+    { id: 2, title: 'Lesson 2', type: 'cartoon', fullTitle: 'Lesson 2: Cartoon Emotions' },
+    { id: 3, title: 'Lesson 3', type: 'real', fullTitle: 'Lesson 3: Real Photos' },
+    { id: 4, title: 'Lesson 4', type: 'video', fullTitle: 'Lesson 4: Video Emotions' },
+    { id: 5, title: 'Lesson 5', type: 'mixed', fullTitle: 'Lesson 5: Mixed Practice' },
+    { id: 6, title: 'Coming Soon', comingSoon: true, fullTitle: 'More lessons coming soon' },
   ];
 
   // Responsive sizing
   const roadWidth = SCREEN_WIDTH;
-  const lessonSize = Math.min(SCREEN_WIDTH * 0.15, 70);
+  const lessonSize = Math.min(SCREEN_WIDTH * 0.2, 90);
   const lessonSpacing = 200;
-  const avatarSize = Math.min(SCREEN_WIDTH * 0.12, 50);
+  const avatarSize = Math.min(SCREEN_WIDTH * 0.16, 70);
 
   const roadLeft = 0;
   const scrollHeight = lessons.length * lessonSpacing + 400;
@@ -84,9 +97,7 @@ export default function LessonsScreen({ navigation }) {
         navigation.navigate('MatchingExercise', { lessonId: lesson.id });
     }
 
-    if (lesson.id === currentLesson && currentLesson < lessons.length - 1) {
-      setCurrentLesson(currentLesson + 1);
-    }
+    // Lesson progress will be updated when returning from completion
   };
 
   const getLessonIcon = (lesson) => {
@@ -195,14 +206,9 @@ export default function LessonsScreen({ navigation }) {
                 ]}
               >
                 <View style={styles.lessonContent}>
-                  <Text style={[styles.lessonText, { fontSize: lessonSize * 0.1 }]}>
+                  <Text style={[styles.lessonText, { fontSize: lessonSize * 0.15 }]}>
                     {lesson.title}
                   </Text>
-                  {!lesson.comingSoon && (
-                    <Text style={[styles.lessonDescription, { fontSize: lessonSize * 0.08 }]}>
-                      {lesson.description}
-                    </Text>
-                  )}
                   <SpeakerButton 
                     text={lesson.fullTitle} 
                     size={lessonSize * 0.06} 

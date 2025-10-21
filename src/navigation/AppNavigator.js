@@ -15,6 +15,7 @@ import PictureEmotionActivity from '../screens/PictureEmotionActivity';
 import VideoEmotionActivity from '../screens/VideoEmotionActivity';
 import SwipeEmotionActivity from '../screens/SwipeEmotionActivity';
 import EmotionMatchingActivity from '../screens/EmotionMatchingActivity';
+import AILearningActivity from '../screens/AILearningActivity';
 
 import { COLORS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
@@ -33,6 +34,7 @@ function ActivityStackNavigator() {
       <ActivityStack.Screen name="VideoEmotionActivity" component={VideoEmotionActivity} />
       <ActivityStack.Screen name="SwipeEmotionActivity" component={SwipeEmotionActivity} />
       <ActivityStack.Screen name="EmotionMatchingActivity" component={EmotionMatchingActivity} />
+      <ActivityStack.Screen name="AILearningActivity" component={AILearningActivity} />
       <ActivityStack.Screen name="LessonSummary" component={LessonSummaryScreen} />
     </ActivityStack.Navigator>
   );
@@ -49,6 +51,7 @@ function LessonStackNavigator() {
       <LessonStack.Screen name="VideoEmotionActivity" component={VideoEmotionActivity} />
       <LessonStack.Screen name="SwipeEmotionActivity" component={SwipeEmotionActivity} />
       <LessonStack.Screen name="EmotionMatchingActivity" component={EmotionMatchingActivity} />
+      <LessonStack.Screen name="AILearningActivity" component={AILearningActivity} />
       <LessonStack.Screen name="LessonSummary" component={LessonSummaryScreen} />
     </LessonStack.Navigator>
   );

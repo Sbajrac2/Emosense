@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import SimpleIcon from '../components/SimpleIcon';
 import SpeakerButton from '../components/SpeakerButton';
@@ -88,7 +89,8 @@ export default function MatchingExerciseScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
         <View style={styles.topBar}>
           <TouchableOpacity onPress={() => setShowHintMessage(true)}>
             <Image source={IMAGES.hint} style={styles.topBarIcon} />
@@ -202,14 +204,16 @@ export default function MatchingExerciseScreen({ navigation }) {
             )}
           </TouchableOpacity>
         </View>
-      </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.lightGreen },
-  content: { flex: 1, padding: SIZES.padding, position: 'relative' },
+  scrollView: { flex: 1 },
+  content: { padding: SIZES.padding, position: 'relative', paddingBottom: 50 },
   topBar: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: SIZES.margin },
   topBarIcon: { width: 28, height: 28, resizeMode: 'contain' },
   popupWrapper: {

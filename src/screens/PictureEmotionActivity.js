@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
 import SpeakerButton from '../components/SpeakerButton';
 import { COLORS, SIZES, FONTS, SHADOWS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
@@ -206,7 +206,8 @@ export default function PictureEmotionActivity({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
         <View style={styles.topBar}>
           <TouchableOpacity onPress={() => setShowHintMessage(true)}>
             <Image source={IMAGES.hint} style={styles.topBarIcon} />
@@ -298,14 +299,16 @@ export default function PictureEmotionActivity({ navigation, route }) {
             {currentTask === tasks.length - 1 ? 'Finish' : 'Next'}
           </Text>
         </TouchableOpacity>
-      </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.lightGreen },
-  content: { flex: 1, padding: SIZES.padding, position: 'relative' },
+  scrollView: { flex: 1 },
+  content: { padding: SIZES.padding, position: 'relative', paddingBottom: 50 },
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SIZES.margin },
   homeButton: { backgroundColor: COLORS.white, borderRadius: 20, padding: 8 },
   homeIcon: { fontSize: 20 },
