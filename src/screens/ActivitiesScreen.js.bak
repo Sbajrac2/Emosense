@@ -1,0 +1,198 @@
+// import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+} from 'react-native';
+import { COLORS, SIZES, SHADOWS } from '../constants/theme';
+import { IMAGES } from '../constants/images';
+
+export default function ActivitiesScreen({ navigation }) {
+  // Activities with associated lessonId
+  const toDoActivities = [
+    {
+      id: 1,
+      title: 'Activity 1',
+      dueDate: 'Sept 20',
+      assignedBy: 'Ms. Lisa',
+      avatar: IMAGES.photo_girl,
+      lessonId: 1,
+    },
+    {
+      id: 2,
+      title: 'Activity 2',
+      dueDate: 'Sept 22',
+      assignedBy: 'Mr. John',
+      avatar: IMAGES.photo_boy,
+      lessonId: 2,
+    },
+  ];
+
+  const completedActivities = [
+    {
+      id: 3,
+      title: 'Activity 3',
+      dueDate: 'Sept 15',
+      assignedBy: 'Mrs. Kate',
+      avatar: IMAGES.photo_girl,
+      lessonId: 3,
+    },
+    {
+      id: 4,
+      title: 'Activity 4',
+      dueDate: 'Sept 18',
+      assignedBy: 'Mr. Mike',
+      avatar: IMAGES.photo_man,
+      lessonId: 4,
+    },
+  ];
+
+  const handleActivityPress = (activity) => {
+    // Navigate directly to MatchingExercise screen with lessonId
+    navigation.navigate('MatchingExercise', { lessonId: activity.lessonId });
+  };
+
+  const renderActivityCard = (activity) => (
+    <TouchableOpacity
+      key={activity.id}
+      style={styles.activityCard}
+      onPress={() => handleActivityPress(activity)}
+    >
+      <View style={styles.activityLeft}>
+        <Text style={styles.activityTitle}>{activity.title}</Text>
+        <Text style={styles.activityDueDate}>{activity.dueDate}</Text>
+      </View>
+      <View style={styles.activityRight}>
+        <Text style={styles.assignedByText}>Assigned by:</Text>
+        <View style={styles.teacherInfo}>
+          <Image source={activity.avatar} style={styles.teacherAvatar} />
+          <Text style={styles.teacherName}>{activity.assignedBy}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Activities</Text>
+          </View>
+
+          {/* To Do Activities */}
+          <View style={styles.toDoSection}>
+            <Text style={styles.sectionTitle}>To Do</Text>
+            {toDoActivities.map(renderActivityCard)}
+          </View>
+
+          {/* Completed Activities */}
+          <View style={styles.completedSection}>
+            <Text style={styles.sectionTitle}>Completed Activities</Text>
+            {completedActivities.map(renderActivityCard)}
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.lightGreen,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: SIZES.padding,
+    paddingTop: SIZES.padding,
+    paddingBottom: SIZES.padding,
+  },
+  header: {
+    backgroundColor: COLORS.lightGreen,
+    paddingBottom: SIZES.padding,
+  },
+  headerTitle: {
+    fontSize: 32,
+    color: COLORS.black,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    color: COLORS.black,
+    fontWeight: 'bold',
+    marginBottom: SIZES.margin,
+  },
+  toDoSection: {
+    backgroundColor: COLORS.pink,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#E91E63',
+    padding: SIZES.padding,
+    marginBottom: SIZES.margin * 2,
+    ...SHADOWS.medium,
+  },
+  completedSection: {
+    backgroundColor: COLORS.lightBlue,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#2196F3',
+    padding: SIZES.padding,
+    marginBottom: SIZES.margin * 2,
+    ...SHADOWS.medium,
+  },
+  activityCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: SIZES.padding,
+    marginBottom: SIZES.margin,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    ...SHADOWS.small,
+  },
+  activityLeft: {
+    flex: 1,
+  },
+  activityTitle: {
+    fontSize: 16,
+    color: COLORS.black,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  activityDueDate: {
+    fontSize: 14,
+    color: COLORS.grey,
+  },
+  activityRight: {
+    alignItems: 'flex-end',
+  },
+  assignedByText: {
+    fontSize: 12,
+    color: COLORS.grey,
+    marginBottom: 4,
+  },
+  teacherInfo: {
+    alignItems: 'center',
+  },
+  teacherAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginBottom: 4,
+  },
+  teacherName: {
+    fontSize: 12,
+    color: COLORS.black,
+    fontWeight: '500',
+  },
+});
