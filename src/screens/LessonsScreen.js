@@ -11,8 +11,10 @@ import {
   Animated,
 } from 'react-native';
 import SimpleIcon from '../components/SimpleIcon';
+import SpeakerButton from '../components/SpeakerButton';
 import { COLORS, SHADOWS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
+import TTS from '../utils/textToSpeech';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -20,11 +22,12 @@ export default function LessonsScreen({ navigation }) {
   const [currentLesson, setCurrentLesson] = useState(1);
 
   const lessons = [
-    { id: 1, title: 'Lesson 1', type: 'emoji', description: 'Basic Emojis' },
-    { id: 2, title: 'Lesson 2', type: 'cartoon', description: 'Cartoon Emotions' },
-    { id: 3, title: 'Lesson 3', type: 'real', description: 'Real Photos' },
-    { id: 4, title: 'Lesson 4', type: 'mixed', description: 'Mixed Practice' },
-    { id: 5, title: 'More lessons coming soon', comingSoon: true },
+    { id: 1, title: 'L1', type: 'emoji', description: 'Emojis', fullTitle: 'Lesson 1: Basic Emojis' },
+    { id: 2, title: 'L2', type: 'cartoon', description: 'Cartoons', fullTitle: 'Lesson 2: Cartoon Emotions' },
+    { id: 3, title: 'L3', type: 'real', description: 'Photos', fullTitle: 'Lesson 3: Real Photos' },
+    { id: 4, title: 'L4', type: 'video', description: 'Videos', fullTitle: 'Lesson 4: Video Emotions' },
+    { id: 5, title: 'L5', type: 'mixed', description: 'Mixed', fullTitle: 'Lesson 5: Mixed Practice' },
+    { id: 6, title: 'Soon', comingSoon: true, fullTitle: 'More lessons coming soon' },
   ];
 
   // Responsive sizing
@@ -48,9 +51,17 @@ export default function LessonsScreen({ navigation }) {
     }).start();
   }, [currentLesson]);
 
-  const handleLessonPress = (lesson) => {
-    if (lesson.comingSoon) return;
-    if (lesson.id > currentLesson) return;
+  const handleLessonPress = async (lesson) => {
+    if (lesson.comingSoon) {
+      await TTS.speak('More lessons coming soon!');
+      return;
+    }
+    if (lesson.id > currentLesson) {
+      await TTS.speak('Complete previous lessons first');
+      return;
+    }
+
+    await TTS.speak(`Starting ${lesson.fullTitle}`);
 
     // Navigate to different activities based on lesson type
     switch (lesson.type) {
@@ -62,6 +73,9 @@ export default function LessonsScreen({ navigation }) {
         break;
       case 'real':
         navigation.navigate('PictureEmotionActivity', { lessonType: 'real' });
+        break;
+      case 'video':
+        navigation.navigate('VideoEmotionActivity', { lessonType: 'video' });
         break;
       case 'mixed':
         navigation.navigate('EmotionMatchingActivity', { lessonType: 'mixed' });
@@ -124,6 +138,7 @@ export default function LessonsScreen({ navigation }) {
             zIndex: 0,
           }}
           resizeMode="cover"
+          fadeDuration={0}
         />
 
         {/* Lessons */}
@@ -179,14 +194,22 @@ export default function LessonsScreen({ navigation }) {
                   },
                 ]}
               >
-                <Text style={[styles.lessonText, { fontSize: lessonSize * 0.1 }]}>
-                  {lesson.comingSoon ? 'Coming Soon' : lesson.title}
-                </Text>
-                {!lesson.comingSoon && (
-                  <Text style={[styles.lessonDescription, { fontSize: lessonSize * 0.08 }]}>
-                    {lesson.description}
+                <View style={styles.lessonContent}>
+                  <Text style={[styles.lessonText, { fontSize: lessonSize * 0.1 }]}>
+                    {lesson.title}
                   </Text>
-                )}
+                  {!lesson.comingSoon && (
+                    <Text style={[styles.lessonDescription, { fontSize: lessonSize * 0.08 }]}>
+                      {lesson.description}
+                    </Text>
+                  )}
+                  <SpeakerButton 
+                    text={lesson.fullTitle} 
+                    size={lessonSize * 0.06} 
+                    color={COLORS.black}
+                    style={styles.lessonSpeaker}
+                  />
+                </View>
               </View>
 
               {/* Icon below sign */}
@@ -231,6 +254,7 @@ export default function LessonsScreen({ navigation }) {
               borderColor: COLORS.white,
             }}
             resizeMode="cover"
+            fadeDuration={0}
           />
         </Animated.View>
       </ScrollView>
@@ -266,5 +290,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...SHADOWS.small,
+  },
+  lessonContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lessonSpeaker: {
+    marginTop: 2,
   },
 });

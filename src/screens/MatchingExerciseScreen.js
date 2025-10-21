@@ -9,8 +9,10 @@ import {
   Dimensions,
 } from 'react-native';
 import SimpleIcon from '../components/SimpleIcon';
+import SpeakerButton from '../components/SpeakerButton';
 import { COLORS, SIZES, FONTS, SHADOWS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
+import TTS from '../utils/textToSpeech';
 
 const { width } = Dimensions.get('window');
 
@@ -20,26 +22,47 @@ export default function MatchingExerciseScreen({ navigation }) {
   const [score, setScore] = useState(0);
   const [showHelpMessage, setShowHelpMessage] = useState(false);
   const [showHintMessage, setShowHintMessage] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [showSecondChance, setShowSecondChance] = useState(false);
 
   const questions = [
-    { id: 1, type: 'emoji', image: '😠', correctAnswer: 'Angry', options: ['Angry', 'Happy', 'Sad'], lessonTitle: 'Feeling Words' },
-    { id: 2, type: 'emoji', image: '😰', correctAnswer: 'Sad', options: ['Angry', 'Happy', 'Sad'], lessonTitle: 'Feeling Words' },
-    { id: 3, type: 'emoji', image: '😄', correctAnswer: 'Happy', options: ['Angry', 'Happy', 'Sad'], lessonTitle: 'Feeling Words' },
-    { id: 4, type: 'emoji', image: '😴', correctAnswer: 'Tired', options: ['Tired', 'Sad', 'Angry'], lessonTitle: 'Feeling Words' },
+    { id: 1, type: 'emoji', image: '😠', correctAnswer: 'Angry', options: ['Angry', 'Happy', 'Sad'], lessonTitle: 'Feelings', hint: 'Look at the eyebrows and mouth' },
+    { id: 2, type: 'emoji', image: '😰', correctAnswer: 'Sad', options: ['Angry', 'Happy', 'Sad'], lessonTitle: 'Feelings', hint: 'Notice the downward mouth' },
+    { id: 3, type: 'emoji', image: '😄', correctAnswer: 'Happy', options: ['Angry', 'Happy', 'Sad'], lessonTitle: 'Feelings', hint: 'See the big smile' },
+    { id: 4, type: 'emoji', image: '😴', correctAnswer: 'Tired', options: ['Tired', 'Sad', 'Angry'], lessonTitle: 'Feelings', hint: 'Eyes are closed for sleep' },
   ];
 
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
-  const handleAnswerSelect = (answer) => {
-    if (selectedAnswer !== null) return;
+  const handleAnswerSelect = async (answer) => {
+    if (selectedAnswer !== null && !showSecondChance) return;
+    
     setSelectedAnswer(answer);
-    if (answer === currentQuestion.correctAnswer) setScore(score + 1);
+    setAttempts(attempts + 1);
+    
+    if (answer === currentQuestion.correctAnswer) {
+      setScore(score + 1);
+      await TTS.speakFeedback('Great job!', true);
+      setShowSecondChance(false);
+    } else {
+      if (attempts === 0) {
+        await TTS.speakFeedback('Not quite right. Here\'s a hint!', false);
+        setShowHintMessage(true);
+        setShowSecondChance(true);
+        setTimeout(() => {
+          setSelectedAnswer(null);
+        }, 2000);
+      } else {
+        await TTS.speakFeedback('Good try! Let\'s move on', false);
+        setShowSecondChance(false);
+      }
+    }
   };
 
   const handleNext = () => {
     if (isLastQuestion) {
-      navigation.replace('LessonSummary', { 
+      navigation.navigate('LessonSummary', { 
         score, 
         totalQuestions: questions.length,
         lessonTitle: currentQuestion.lessonTitle 
@@ -47,6 +70,10 @@ export default function MatchingExerciseScreen({ navigation }) {
     } else {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
+      setAttempts(0);
+      setShowSecondChance(false);
+      setShowHintMessage(false);
+      setShowHelpMessage(false);
     }
   };
 
@@ -54,6 +81,8 @@ export default function MatchingExerciseScreen({ navigation }) {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
       setSelectedAnswer(null);
+      setAttempts(0);
+      setShowSecondChance(false);
     }
   };
 
@@ -71,18 +100,34 @@ export default function MatchingExerciseScreen({ navigation }) {
 
         {showHintMessage && (
           <View style={[styles.popupWrapper, { top: 50, left: 20 }]}>
-            <Text style={styles.helpText}>Look at the mouth - it shows how someone is feeling.</Text>
+            <View style={styles.hintContainer}>
+              <Text style={styles.helpText}>{currentQuestion.hint}</Text>
+              <SpeakerButton 
+                text={currentQuestion.hint} 
+                type="hint" 
+                size={16} 
+                style={styles.speakerButton}
+              />
+            </View>
             <TouchableOpacity onPress={() => setShowHintMessage(false)} style={{ marginTop: 5, padding: 5 }}>
-              <Text style={{ color: COLORS.darkBlue, fontWeight: 'bold' }}>Close</Text>
+              <Text style={{ color: COLORS.darkBlue, fontWeight: 'bold' }}>✕</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {showHelpMessage && (
           <View style={[styles.popupWrapper, { top: 50, right: 20 }]}>
-            <Text style={styles.helpText}>Tap the word that shows how the picture feels.</Text>
+            <View style={styles.hintContainer}>
+              <Text style={styles.helpText}>Tap the feeling word</Text>
+              <SpeakerButton 
+                text="Tap the feeling word that matches the picture" 
+                type="instruction" 
+                size={16} 
+                style={styles.speakerButton}
+              />
+            </View>
             <TouchableOpacity onPress={() => setShowHelpMessage(false)} style={{ marginTop: 5, padding: 5 }}>
-              <Text style={{ color: COLORS.darkBlue, fontWeight: 'bold' }}>Close</Text>
+              <Text style={{ color: COLORS.darkBlue, fontWeight: 'bold' }}>✕</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -100,7 +145,15 @@ export default function MatchingExerciseScreen({ navigation }) {
           <View style={styles.imageContainer}>
             <Text style={styles.questionImage}>{currentQuestion.image}</Text>
           </View>
-          <Text style={styles.instruction}>Click on the feeling word that matches the picture.</Text>
+          <View style={styles.instructionContainer}>
+            <Text style={styles.instruction}>Match the feeling</Text>
+            <SpeakerButton 
+              text="Click on the feeling word that matches the picture" 
+              type="instruction" 
+              size={18} 
+              style={styles.speakerButton}
+            />
+          </View>
           <View style={styles.optionsContainer}>
             {currentQuestion.options.map((option, index) => (
               <TouchableOpacity
@@ -111,11 +164,19 @@ export default function MatchingExerciseScreen({ navigation }) {
                   selectedAnswer === option && option !== currentQuestion.correctAnswer && styles.incorrectOption,
                 ]}
                 onPress={() => handleAnswerSelect(option)}
-                disabled={selectedAnswer !== null}
+                disabled={selectedAnswer !== null && !showSecondChance}
               >
-                <Text style={[styles.optionText, selectedAnswer === option && { color: COLORS.white }]}>
-                  {option}
-                </Text>
+                <View style={styles.optionContent}>
+                  <Text style={[styles.optionText, selectedAnswer === option && { color: COLORS.white }]}>
+                    {option}
+                  </Text>
+                  <SpeakerButton 
+                    text={option} 
+                    size={14} 
+                    color={selectedAnswer === option ? COLORS.white : COLORS.darkBlue}
+                    style={styles.optionSpeaker}
+                  />
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -130,9 +191,9 @@ export default function MatchingExerciseScreen({ navigation }) {
             <SimpleIcon name="chevron-back" size={24} color={COLORS.darkBlue} />
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.navButton, selectedAnswer === null && styles.disabledButton]}
+            style={[styles.navButton, (selectedAnswer === null || showSecondChance) && styles.disabledButton]}
             onPress={handleNext}
-            disabled={selectedAnswer === null}
+            disabled={selectedAnswer === null || showSecondChance}
           >
             {isLastQuestion ? (
               <Text style={styles.doneButtonText}>Done</Text>
@@ -162,6 +223,11 @@ const styles = StyleSheet.create({
     zIndex: 999,
   },
   helpText: { fontSize: SIZES.base, color: COLORS.black, textAlign: 'center', ...FONTS.medium },
+  hintContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  instructionContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: SIZES.margin * 2 },
+  speakerButton: { marginLeft: 8 },
+  optionContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  optionSpeaker: { marginLeft: 8 },
   progressContainer: { alignItems: 'center', marginBottom: SIZES.margin * 2 },
   lessonTitle: { fontSize: SIZES.large, color: COLORS.black, marginBottom: SIZES.margin, ...FONTS.bold },
   progressDots: { flexDirection: 'row', justifyContent: 'center' },

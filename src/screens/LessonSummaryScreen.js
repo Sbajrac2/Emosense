@@ -13,12 +13,22 @@ import { COLORS, SIZES, FONTS, SHADOWS } from '../constants/theme';
 const { width } = Dimensions.get('window');
 
 export default function LessonSummaryScreen({ navigation, route }) {
-  const { score, totalQuestions, lessonTitle } = route.params || { score: 4, totalQuestions: 4, lessonTitle: 'Feeling Words' };
+  const { score, totalQuestions, lessonTitle, source } = route.params || { score: 4, totalQuestions: 4, lessonTitle: 'Feeling Words', source: 'lessons' };
   const percentage = Math.round((score / totalQuestions) * 100);
   const streak = 52; // This could be stored in app state
 
   const handleDone = () => {
-    navigation.navigate('MainTabs');
+    if (source === 'activities') {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'ActivitiesMain' }],
+      });
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'LessonsMain' }],
+      });
+    }
   };
 
   return (

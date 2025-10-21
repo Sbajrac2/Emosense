@@ -8,95 +8,203 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
+import SpeakerButton from '../components/SpeakerButton';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
+import TTS from '../utils/textToSpeech';
+
+const getEmotionColor = (emotion) => {
+  switch (emotion) {
+    case 'happy': return COLORS.yellow;
+    case 'sad': return COLORS.lightBlue;
+    case 'angry': return '#FFB3B3';
+    case 'surprised': return COLORS.pink;
+    default: return COLORS.lightGreen;
+  }
+};
 
 export default function ActivitiesScreen({ navigation }) {
-  const toDoActivities = [
-    {
-      id: 1,
-      title: 'Activity 1',
-      description: 'Real Photo Emotions',
-      type: 'picture_emotion',
-      dueDate: 'Sept 20',
-      assignedBy: 'Ms. Lisa',
-      avatar: IMAGES.photo_girl,
-    },
-    {
-      id: 2,
-      title: 'Activity 2',
-      description: 'Video Emotion Recognition',
-      type: 'video_emotion',
-      dueDate: 'Sept 22',
-      assignedBy: 'Mr. John',
-      avatar: IMAGES.photo_boy,
-    },
-    {
-      id: 3,
-      title: 'Activity 3',
-      description: 'Swipe Emotion Cards',
-      type: 'swipe_emotion',
-      dueDate: 'Sept 25',
-      assignedBy: 'Mrs. Kate',
-      avatar: IMAGES.photo_woman,
-    },
-    {
-      id: 4,
-      title: 'Activity 4',
-      description: 'Match Real & Cartoon Emotions',
-      type: 'emotion_matching',
-      dueDate: 'Sept 28',
-      assignedBy: 'Mr. Mike',
-      avatar: IMAGES.photo_man,
-    },
-    {
-      id: 5,
-      title: 'Activity 5',
-      description: 'Emoji Quiz Challenge',
-      type: 'emoji_matching',
-      dueDate: 'Oct 1',
-      assignedBy: 'Ms. Lisa',
-      avatar: IMAGES.photo_girl,
-    },
-  ];
+  const emotionActivities = {
+    happy: [
+      {
+        id: 1,
+        title: 'H1',
+        description: 'Happy Photos',
+        fullDescription: 'Identify Happy emotions in photos',
+        type: 'picture_emotion',
+        emotion: 'happy',
+        assignedBy: 'Ms. Lisa',
+        avatar: IMAGES.photo_girl,
+      },
+      {
+        id: 2,
+        title: 'H2',
+        description: 'Happy Videos',
+        fullDescription: 'Watch videos and find happy moments',
+        type: 'video_emotion',
+        emotion: 'happy',
+        assignedBy: 'Mr. John',
+        avatar: IMAGES.photo_boy,
+      },
+      {
+        id: 3,
+        title: 'H3',
+        description: 'Happy Matching',
+        fullDescription: 'Match happy faces with situations',
+        type: 'emotion_matching',
+        emotion: 'happy',
+        assignedBy: 'Mrs. Kate',
+        avatar: IMAGES.photo_woman,
+      },
+      {
+        id: 4,
+        title: 'H4',
+        description: 'Happy Levels',
+        fullDescription: 'Identify different levels of happiness',
+        type: 'picture_emotion',
+        emotion: 'happy',
+        assignedBy: 'Mr. Mike',
+        avatar: IMAGES.photo_man,
+      },
+    ],
+    sad: [
+      {
+        id: 5,
+        title: 'S1',
+        description: 'Sad Photos',
+        fullDescription: 'Recognize sad emotions in pictures',
+        type: 'picture_emotion',
+        emotion: 'sad',
+        assignedBy: 'Ms. Lisa',
+        avatar: IMAGES.photo_girl,
+      },
+      {
+        id: 6,
+        title: 'S2',
+        description: 'Sad Videos',
+        fullDescription: 'Identify sadness in video clips',
+        type: 'video_emotion',
+        emotion: 'sad',
+        assignedBy: 'Mr. John',
+        avatar: IMAGES.photo_boy,
+      },
+      {
+        id: 7,
+        title: 'S3',
+        description: 'Sad Situations',
+        fullDescription: 'Match sad emotions with causes',
+        type: 'emotion_matching',
+        emotion: 'sad',
+        assignedBy: 'Mrs. Kate',
+        avatar: IMAGES.photo_woman,
+      },
+    ],
+    angry: [
+      {
+        id: 8,
+        title: 'A1',
+        description: 'Angry Photos',
+        fullDescription: 'Spot angry expressions in photos',
+        type: 'picture_emotion',
+        emotion: 'angry',
+        assignedBy: 'Mrs. Kate',
+        avatar: IMAGES.photo_woman,
+      },
+      {
+        id: 9,
+        title: 'A2',
+        description: 'Angry Videos',
+        fullDescription: 'Recognize anger in video clips',
+        type: 'video_emotion',
+        emotion: 'angry',
+        assignedBy: 'Mr. John',
+        avatar: IMAGES.photo_boy,
+      },
+      {
+        id: 10,
+        title: 'A3',
+        description: 'Anger Management',
+        fullDescription: 'Learn about managing angry feelings',
+        type: 'emotion_matching',
+        emotion: 'angry',
+        assignedBy: 'Mr. Mike',
+        avatar: IMAGES.photo_man,
+      },
+    ],
+    surprised: [
+      {
+        id: 11,
+        title: 'Su1',
+        description: 'Surprise Photos',
+        fullDescription: 'Find surprised faces in pictures',
+        type: 'picture_emotion',
+        emotion: 'surprised',
+        assignedBy: 'Ms. Lisa',
+        avatar: IMAGES.photo_girl,
+      },
+      {
+        id: 12,
+        title: 'Su2',
+        description: 'Surprise Videos',
+        fullDescription: 'Spot surprise reactions in videos',
+        type: 'video_emotion',
+        emotion: 'surprised',
+        assignedBy: 'Mr. John',
+        avatar: IMAGES.photo_boy,
+      },
+    ],
+    mixed: [
+      {
+        id: 13,
+        title: 'M1',
+        description: 'Mixed Emotions',
+        fullDescription: 'Identify various emotions together',
+        type: 'picture_emotion',
+        emotion: 'mixed',
+        assignedBy: 'Ms. Lisa',
+        avatar: IMAGES.photo_girl,
+      },
+      {
+        id: 14,
+        title: 'M2',
+        description: 'Social Cues',
+        fullDescription: 'Understand social emotional cues',
+        type: 'video_emotion',
+        emotion: 'mixed',
+        assignedBy: 'Mr. John',
+        avatar: IMAGES.photo_boy,
+      },
+    ],
+  };
 
   const completedActivities = [
     {
-      id: 6,
-      title: 'Activity 6',
-      description: 'Basic Emotion Recognition',
+      id: 9,
+      title: 'C1',
+      description: 'Basic Emotions',
+      fullDescription: 'Basic Emotion Recognition Activity',
       type: 'picture_emotion',
-      dueDate: 'Sept 15',
+      emotion: 'mixed',
       assignedBy: 'Ms. Lisa',
       avatar: IMAGES.photo_girl,
     },
-    {
-      id: 7,
-      title: 'Activity 7',
-      description: 'Emotion Scenarios',
-      type: 'video_emotion',
-      dueDate: 'Sept 18',
-      assignedBy: 'Mr. John',
-      avatar: IMAGES.photo_boy,
-    },
   ];
 
-  const handleActivityPress = (activity) => {
+  const handleActivityPress = async (activity) => {
+    await TTS.speak(`Starting ${activity.fullDescription}`);
+    
     switch (activity.type) {
       case 'picture_emotion':
-        navigation.navigate('PictureEmotionActivity');
+        navigation.navigate('PictureEmotionActivity', { emotion: activity.emotion });
         break;
       case 'video_emotion':
-        navigation.navigate('VideoEmotionActivity');
+        navigation.navigate('VideoEmotionActivity', { emotion: activity.emotion });
         break;
       case 'swipe_emotion':
-        navigation.navigate('SwipeEmotionActivity');
+        navigation.navigate('SwipeEmotionActivity', { emotion: activity.emotion });
         break;
       case 'emotion_matching':
-        navigation.navigate('EmotionMatchingActivity');
-        break;
-      case 'emoji_matching':
-        navigation.navigate('MatchingExercise', { lessonId: activity.id });
+        navigation.navigate('EmotionMatchingActivity', { emotion: activity.emotion });
         break;
       default:
         navigation.navigate('MatchingExercise', { lessonId: activity.id });
@@ -124,14 +232,21 @@ export default function ActivitiesScreen({ navigation }) {
         <View style={styles.activityHeader}>
           <Text style={styles.activityIcon}>{getActivityIcon(activity.type)}</Text>
           <View style={styles.activityTitleContainer}>
-            <Text style={styles.activityTitle}>{activity.title}</Text>
+            <View style={styles.titleRow}>
+              <Text style={styles.activityTitle}>{activity.title}</Text>
+              <SpeakerButton 
+                text={activity.fullDescription} 
+                size={14} 
+                style={styles.activitySpeaker}
+              />
+            </View>
             <Text style={styles.activityDescription}>{activity.description}</Text>
           </View>
         </View>
-        <Text style={styles.activityDueDate}>Due: {activity.dueDate}</Text>
+        <Text style={styles.activityDueDate}>{activity.dueDate}</Text>
       </View>
       <View style={styles.activityRight}>
-        <Text style={styles.assignedByText}>Assigned by:</Text>
+        <Text style={styles.assignedByText}>By:</Text>
         <View style={styles.teacherInfo}>
           <Image source={activity.avatar} style={styles.teacherAvatar} />
           <Text style={styles.teacherName}>{activity.assignedBy}</Text>
@@ -148,13 +263,15 @@ export default function ActivitiesScreen({ navigation }) {
             <Text style={styles.headerTitle}>Activities</Text>
           </View>
 
-          <View style={styles.toDoSection}>
-            <Text style={styles.sectionTitle}>To Do</Text>
-            {toDoActivities.map(renderActivityCard)}
-          </View>
+          {Object.entries(emotionActivities).map(([emotion, activities]) => (
+            <View key={emotion} style={[styles.emotionSection, { backgroundColor: getEmotionColor(emotion) }]}>
+              <Text style={styles.sectionTitle}>{emotion.charAt(0).toUpperCase() + emotion.slice(1)} Activities</Text>
+              {activities.map(renderActivityCard)}
+            </View>
+          ))}
 
           <View style={styles.completedSection}>
-            <Text style={styles.sectionTitle}>Completed Activities</Text>
+            <Text style={styles.sectionTitle}>Completed</Text>
             {completedActivities.map(renderActivityCard)}
           </View>
         </View>
@@ -170,11 +287,10 @@ const styles = StyleSheet.create({
   header: { backgroundColor: COLORS.lightGreen, paddingBottom: SIZES.padding },
   headerTitle: { fontSize: 32, color: COLORS.black, fontWeight: 'bold', marginBottom: 8 },
   sectionTitle: { fontSize: 22, color: COLORS.black, fontWeight: 'bold', marginBottom: SIZES.margin },
-  toDoSection: {
-    backgroundColor: COLORS.pink,
+  emotionSection: {
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: '#E91E63',
+    borderColor: COLORS.darkBlue,
     padding: SIZES.padding,
     marginBottom: SIZES.margin * 2,
     ...SHADOWS.medium,
@@ -210,4 +326,6 @@ const styles = StyleSheet.create({
   teacherInfo: { alignItems: 'center' },
   teacherAvatar: { width: 40, height: 40, borderRadius: 20, marginBottom: 4 },
   teacherName: { fontSize: 12, color: COLORS.black, fontWeight: '500' },
+  titleRow: { flexDirection: 'row', alignItems: 'center' },
+  activitySpeaker: { marginLeft: 8 },
 });

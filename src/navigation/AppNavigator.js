@@ -22,6 +22,38 @@ import { IMAGES } from '../constants/images';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+const ActivityStack = createStackNavigator();
+
+function ActivityStackNavigator() {
+  return (
+    <ActivityStack.Navigator screenOptions={{ headerShown: false }}>
+      <ActivityStack.Screen name="ActivitiesMain" component={ActivitiesScreen} />
+      <ActivityStack.Screen name="MatchingExercise" component={MatchingExerciseScreen} />
+      <ActivityStack.Screen name="PictureEmotionActivity" component={PictureEmotionActivity} />
+      <ActivityStack.Screen name="VideoEmotionActivity" component={VideoEmotionActivity} />
+      <ActivityStack.Screen name="SwipeEmotionActivity" component={SwipeEmotionActivity} />
+      <ActivityStack.Screen name="EmotionMatchingActivity" component={EmotionMatchingActivity} />
+      <ActivityStack.Screen name="LessonSummary" component={LessonSummaryScreen} />
+    </ActivityStack.Navigator>
+  );
+}
+
+const LessonStack = createStackNavigator();
+
+function LessonStackNavigator() {
+  return (
+    <LessonStack.Navigator screenOptions={{ headerShown: false }}>
+      <LessonStack.Screen name="LessonsMain" component={LessonsScreen} />
+      <LessonStack.Screen name="MatchingExercise" component={MatchingExerciseScreen} />
+      <LessonStack.Screen name="PictureEmotionActivity" component={PictureEmotionActivity} />
+      <LessonStack.Screen name="VideoEmotionActivity" component={VideoEmotionActivity} />
+      <LessonStack.Screen name="SwipeEmotionActivity" component={SwipeEmotionActivity} />
+      <LessonStack.Screen name="EmotionMatchingActivity" component={EmotionMatchingActivity} />
+      <LessonStack.Screen name="LessonSummary" component={LessonSummaryScreen} />
+    </LessonStack.Navigator>
+  );
+}
+
 function TabNavigator() {
   return (
     <Tab.Navigator
@@ -48,6 +80,7 @@ function TabNavigator() {
                 marginBottom: -3,
                 opacity: focused ? 1 : 0.6,
               }}
+              fadeDuration={0}
             />
           );
         },
@@ -63,8 +96,8 @@ function TabNavigator() {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Activities" component={ActivitiesScreen} options={{ tabBarLabel: 'Activities' }} />
-      <Tab.Screen name="Lessons" component={LessonsScreen} options={{ tabBarLabel: 'Lessons' }} />
+      <Tab.Screen name="Activities" component={ActivityStackNavigator} options={{ tabBarLabel: 'Activities' }} />
+      <Tab.Screen name="Lessons" component={LessonStackNavigator} options={{ tabBarLabel: 'Lessons' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Profile' }} />
     </Tab.Navigator>
   );
@@ -76,12 +109,6 @@ export default function AppNavigator() {
       <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="MainTabs" component={TabNavigator} />
-        <Stack.Screen name="MatchingExercise" component={MatchingExerciseScreen} />
-        <Stack.Screen name="LessonSummary" component={LessonSummaryScreen} />
-        <Stack.Screen name="PictureEmotionActivity" component={PictureEmotionActivity} />
-        <Stack.Screen name="VideoEmotionActivity" component={VideoEmotionActivity} />
-        <Stack.Screen name="SwipeEmotionActivity" component={SwipeEmotionActivity} />
-        <Stack.Screen name="EmotionMatchingActivity" component={EmotionMatchingActivity} />
       </Stack.Navigator>
     </NavigationContainer>
   );
