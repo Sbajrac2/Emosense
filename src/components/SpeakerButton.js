@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { COLORS } from '../constants/theme';
 import TTS from '../utils/textToSpeech';
+import { useTTS } from '../contexts/TTSContext';
 
 export default function SpeakerButton({ 
   text, 
@@ -11,8 +12,13 @@ export default function SpeakerButton({
   type = 'default' // 'hint', 'instruction', 'feedback', 'question'
 }) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const { isTTSEnabled } = useTTS();
+
+
 
   const handlePress = async () => {
+    if (!isTTSEnabled) return;
+    
     if (isPlaying) {
       TTS.stop();
       setIsPlaying(false);

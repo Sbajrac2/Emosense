@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, Dimensions } from 'react-native';
+import TTSToggle from '../components/TTSToggle';
 import { COLORS, SIZES, FONTS, SHADOWS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
 
 const { width } = Dimensions.get('window');
 
-export default function EmotionMatchingActivity({ navigation }) {
+export default function EmotionMatchingActivity({ navigation, route }) {
   const [currentTask, setCurrentTask] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [score, setScore] = useState(0);
@@ -18,22 +19,55 @@ export default function EmotionMatchingActivity({ navigation }) {
       rightImages: [
         { image: require('../../assets/images/Sad.png'), emotion: 'Sad' },
         { image: require('../../assets/images/Happy.png'), emotion: 'Happy' },
-        { image: require('../../assets/images/Angry_real.png'), emotion: 'Angry' },
+        { image: IMAGES.angry_female_1, emotion: 'Angry' },
       ],
       question: 'Which emotion matches the person on the left?',
       correctAnswer: 'Happy',
       hint: 'Look for the same facial expression - smiling!'
     },
     {
-      leftImage: require('../../assets/images/Surprised2_real.png'),
+      leftImage: require('../../assets/images/Surprised_real.png'),
       rightImages: [
         { image: require('../../assets/images/Excited.png'), emotion: 'Excited' },
         { image: require('../../assets/images/Surprised.png'), emotion: 'Surprised' },
-        { image: require('../../assets/images/Confused.png'), emotion: 'Confused' },
+        { image: require('../../assets/images/Happy.png'), emotion: 'Happy' },
       ],
       question: 'Match the real photo with the correct cartoon emotion',
       correctAnswer: 'Surprised',
       hint: 'Notice the wide open eyes and mouth!'
+    },
+    {
+      leftImage: require('../../assets/images/TIred_real.png'),
+      rightImages: [
+        { image: require('../../assets/images/Happy.png'), emotion: 'Happy' },
+        { image: require('../../assets/images/Sad.png'), emotion: 'Sad' },
+        { image: require('../../assets/images/Excited.png'), emotion: 'Excited' },
+      ],
+      question: 'What emotion does this tired person show?',
+      correctAnswer: 'Sad',
+      hint: 'Look at the low energy and droopy expression'
+    },
+    {
+      leftImage: IMAGES.angry_male_1,
+      rightImages: [
+        { image: require('../../assets/images/Happy.png'), emotion: 'Happy' },
+        { image: IMAGES.angry_female_1, emotion: 'Angry' },
+        { image: require('../../assets/images/Surprised.png'), emotion: 'Surprised' },
+      ],
+      question: 'Match this angry expression',
+      correctAnswer: 'Angry',
+      hint: 'Notice the tense face and furrowed brows'
+    },
+    {
+      leftImage: require('../../assets/images/Worried_real.png'),
+      rightImages: [
+        { image: require('../../assets/images/Happy.png'), emotion: 'Happy' },
+        { image: require('../../assets/images/Sad.png'), emotion: 'Worried' },
+        { image: require('../../assets/images/Excited.png'), emotion: 'Excited' },
+      ],
+      question: 'What emotion is this person feeling?',
+      correctAnswer: 'Worried',
+      hint: 'Look at the concerned, anxious expression'
     },
   ];
 
@@ -53,7 +87,8 @@ export default function EmotionMatchingActivity({ navigation }) {
       navigation.navigate('LessonSummary', { 
         score, 
         totalQuestions: tasks.length, 
-        lessonTitle: 'Emotion Matching' 
+        lessonTitle: route.params?.source === 'lessons' ? 'Lesson 5' : 'Emotion Matching',
+        source: route.params?.source || 'activities'
       });
     }
   };
@@ -64,6 +99,7 @@ export default function EmotionMatchingActivity({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TTSToggle />
       <View style={styles.content}>
         <View style={styles.topBar}>
           <TouchableOpacity onPress={() => setShowHintMessage(true)}>

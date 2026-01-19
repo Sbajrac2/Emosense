@@ -12,35 +12,55 @@ import {
 } from 'react-native';
 import SimpleIcon from '../components/SimpleIcon';
 import SpeakerButton from '../components/SpeakerButton';
+import TTSToggle from '../components/TTSToggle';
 import { COLORS, SHADOWS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
 import TTS from '../utils/textToSpeech';
+import { useTTS } from '../contexts/TTSContext';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-export default function LessonsScreen({ navigation }) {
+export default function LessonsScreen({ navigation, route }) {
   const [currentLesson, setCurrentLesson] = useState(1);
+  
+  // Force update when route params change
+  React.useEffect(() => {
+    if (route?.params?.lessonCompleted) {
+      const nextLesson = Math.min(route.params.lessonCompleted + 1, 6);
+      setCurrentLesson(nextLesson);
+    }
+  }, [route?.params?.lessonCompleted]);
+  const { isTTSEnabled } = useTTS();
   
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      // Check if returning from a completed lesson
-      const completedLesson = navigation.getState()?.routes?.find(route => 
-        route.params?.lessonCompleted
-      );
-      if (completedLesson && completedLesson.params.lessonCompleted > currentLesson) {
-        setCurrentLesson(completedLesson.params.lessonCompleted);
+      if (route?.params?.lessonCompleted) {
+        const nextLesson = Math.min(route.params.lessonCompleted + 1, 6);
+        setCurrentLesson(nextLesson);
       }
     });
     return unsubscribe;
-  }, [navigation, currentLesson]);
+  }, [navigation]);
+
+  useEffect(() => {
+    if (route?.params?.lessonCompleted) {
+      const nextLesson = Math.min(route.params.lessonCompleted + 1, 6);
+      setCurrentLesson(nextLesson);
+    }
+  }, [route?.params?.lessonCompleted]);
 
   const lessons = [
-    { id: 1, title: 'Lesson 1', type: 'emoji', fullTitle: 'Lesson 1: Basic Emojis' },
-    { id: 2, title: 'Lesson 2', type: 'cartoon', fullTitle: 'Lesson 2: Cartoon Emotions' },
-    { id: 3, title: 'Lesson 3', type: 'real', fullTitle: 'Lesson 3: Real Photos' },
-    { id: 4, title: 'Lesson 4', type: 'video', fullTitle: 'Lesson 4: Video Emotions' },
-    { id: 5, title: 'Lesson 5', type: 'mixed', fullTitle: 'Lesson 5: Mixed Practice' },
-    { id: 6, title: 'Coming Soon', comingSoon: true, fullTitle: 'More lessons coming soon' },
+    { id: 1, title: '1', type: 'emoji', fullTitle: 'Lesson 1: Basic Emojis' },
+    { id: 2, title: '2', type: 'cartoon', fullTitle: 'Lesson 2: Cartoon Emotions' },
+    { id: 3, title: '3', type: 'real', fullTitle: 'Lesson 3: Real Photos' },
+    { id: 4, title: '4', type: 'video', fullTitle: 'Lesson 4: Video Emotions' },
+    { id: 5, title: '5', type: 'bodyLanguage', fullTitle: 'Lesson 5: Body Language' },
+    { id: 6, title: '6', type: 'emotionSort', fullTitle: 'Lesson 6: Emotion Sorting' },
+    { id: 7, title: '7', type: 'intensity', fullTitle: 'Lesson 7: Emotion Intensity' },
+    { id: 8, title: '8', type: 'stories', fullTitle: 'Lesson 8: Emotion Stories' },
+    { id: 9, title: '9', type: 'mixed', fullTitle: 'Lesson 9: Mixed Practice' },
+    { id: 10, title: '10', type: 'chooseAll', fullTitle: 'Lesson 10: Choose All That Apply' },
+    { id: 11, title: 'More Soon', comingSoon: true, fullTitle: 'More lessons coming soon' },
   ];
 
   // Responsive sizing
@@ -66,35 +86,50 @@ export default function LessonsScreen({ navigation }) {
 
   const handleLessonPress = async (lesson) => {
     if (lesson.comingSoon) {
-      await TTS.speak('More lessons coming soon!');
+      if (isTTSEnabled) await TTS.speak('More lessons coming soon');
       return;
     }
     if (lesson.id > currentLesson) {
-      await TTS.speak('Complete previous lessons first');
+      if (isTTSEnabled) await TTS.speak('Complete previous lessons first');
       return;
     }
 
-    await TTS.speak(`Starting ${lesson.fullTitle}`);
+    if (isTTSEnabled) await TTS.speak(`Starting lesson ${lesson.id}`);
 
     // Navigate to different activities based on lesson type
     switch (lesson.type) {
       case 'emoji':
-        navigation.navigate('MatchingExercise', { lessonId: lesson.id, lessonType: 'emoji' });
+        navigation.navigate('MatchingExercise', { lessonId: lesson.id, lessonType: 'emoji', source: 'lessons' });
         break;
       case 'cartoon':
-        navigation.navigate('SwipeEmotionActivity', { lessonType: 'cartoon' });
+        navigation.navigate('SwipeEmotionActivity', { lessonType: 'cartoon', source: 'lessons' });
         break;
       case 'real':
-        navigation.navigate('PictureEmotionActivity', { lessonType: 'real' });
+        navigation.navigate('PictureEmotionActivity', { lessonType: 'real', source: 'lessons' });
         break;
       case 'video':
-        navigation.navigate('VideoEmotionActivity', { lessonType: 'video' });
+        navigation.navigate('VideoEmotionActivity', { lessonType: 'video', source: 'lessons' });
         break;
       case 'mixed':
-        navigation.navigate('EmotionMatchingActivity', { lessonType: 'mixed' });
+        navigation.navigate('EmotionMatchingActivity', { lessonType: 'mixed', source: 'lessons' });
+        break;
+      case 'chooseAll':
+        navigation.navigate('ChooseAllActivity', { lessonType: 'chooseAll', source: 'lessons' });
+        break;
+      case 'bodyLanguage':
+        navigation.navigate('BodyLanguageActivity', { source: 'lessons' });
+        break;
+      case 'emotionSort':
+        navigation.navigate('EmotionSortActivity', { source: 'lessons' });
+        break;
+      case 'intensity':
+        navigation.navigate('EmotionIntensityActivity', { source: 'lessons' });
+        break;
+      case 'stories':
+        navigation.navigate('EmotionStoryActivity', { source: 'lessons' });
         break;
       default:
-        navigation.navigate('MatchingExercise', { lessonId: lesson.id });
+        navigation.navigate('MatchingExercise', { lessonId: lesson.id, source: 'lessons' });
     }
 
     // Lesson progress will be updated when returning from completion
@@ -136,6 +171,10 @@ export default function LessonsScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TTSToggle />
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Lessons</Text>
+      </View>
       <ScrollView contentContainerStyle={{ height: scrollHeight }}>
         {/* Road */}
         <Image
@@ -209,12 +248,6 @@ export default function LessonsScreen({ navigation }) {
                   <Text style={[styles.lessonText, { fontSize: lessonSize * 0.15 }]}>
                     {lesson.title}
                   </Text>
-                  <SpeakerButton 
-                    text={lesson.fullTitle} 
-                    size={lessonSize * 0.06} 
-                    color={COLORS.black}
-                    style={styles.lessonSpeaker}
-                  />
                 </View>
               </View>
 
@@ -270,6 +303,8 @@ export default function LessonsScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.lightGreen },
+  header: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 5, alignItems: 'center' },
+  headerTitle: { fontSize: 32, color: COLORS.black, fontWeight: 'bold' },
   lessonSign: {
     borderWidth: 2,
     borderColor: COLORS.black,

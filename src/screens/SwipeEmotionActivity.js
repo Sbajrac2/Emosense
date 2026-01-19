@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, PanResponder, Animated, Image, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import SpeakerButton from '../components/SpeakerButton';
+import TTSToggle from '../components/TTSToggle';
 import { COLORS, SIZES, FONTS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
 import TTS from '../utils/textToSpeech';
+import { useTTS } from '../contexts/TTSContext';
+import { generateVisualCues, getCueStyle } from '../utils/visualCueHelper';
 
 const { width } = Dimensions.get('window');
 
@@ -15,32 +18,36 @@ export default function SwipeEmotionActivity({ navigation, route }) {
   const [showHintMessage, setShowHintMessage] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const pan = new Animated.ValueXY();
+  const { isTTSEnabled } = useTTS();
 
   const getQuestionsForEmotion = (targetEmotion) => {
     const allQuestions = {
       happy: [
-        { image: require('../../assets/images/Happy.png'), emotion: 'Happy', correctSide: 'right', hint: 'Happy is positive - swipe right!' },
-        { image: require('../../assets/images/Excited.png'), emotion: 'Excited', correctSide: 'right', hint: 'Excited is positive - swipe right!' },
-        { image: IMAGES.angry_female_1, emotion: 'Not Happy', correctSide: 'left', hint: 'This is not happy - swipe left!' },
+        { image: require('../../assets/images/Happy.png'), emotion: '', correctSide: 'right', hint: 'Look at the smile and bright eyes' },
+        { image: require('../../assets/images/Excited.png'), emotion: '', correctSide: 'right', hint: 'Notice the wide smile and raised eyebrows' },
+        { image: IMAGES.angry_female_1, emotion: '', correctSide: 'left', hint: 'See the frown and tense face muscles' },
       ],
       angry: [
-        { image: IMAGES.angry_female_1, emotion: 'Angry', correctSide: 'left', hint: 'Angry is negative - swipe left!' },
-        { image: IMAGES.angry_male_1, emotion: 'Mad', correctSide: 'left', hint: 'Mad is negative - swipe left!' },
-        { image: IMAGES.angry_female_2, emotion: 'Upset', correctSide: 'left', hint: 'Upset is negative - swipe left!' },
-        { image: IMAGES.angry_male_2, emotion: 'Frustrated', correctSide: 'left', hint: 'Frustrated is negative - swipe left!' },
-        { image: require('../../assets/images/Happy.png'), emotion: 'Not Angry', correctSide: 'right', hint: 'This is not angry - swipe right!' },
+        { image: IMAGES.angry_female_1, emotion: '', correctSide: 'left', hint: 'Look at the furrowed brows and tight lips' },
+        { image: IMAGES.angry_male_1, emotion: '', correctSide: 'left', hint: 'Notice the clenched jaw and narrowed eyes' },
+        { image: IMAGES.angry_female_2, emotion: '', correctSide: 'left', hint: 'See the downward mouth and tense forehead' },
+        { image: IMAGES.angry_male_2, emotion: '', correctSide: 'left', hint: 'Look at the stern expression and tight face' },
+        { image: require('../../assets/images/Happy.png'), emotion: '', correctSide: 'right', hint: 'Notice the relaxed, smiling face' },
       ],
       sad: [
-        { image: require('../../assets/images/Sad.png'), emotion: 'Sad', correctSide: 'left', hint: 'Sad is negative - swipe left!' },
-        { image: IMAGES.angry_female_3, emotion: 'Unhappy', correctSide: 'left', hint: 'Unhappy is negative - swipe left!' },
-        { image: require('../../assets/images/Happy.png'), emotion: 'Not Sad', correctSide: 'right', hint: 'This is not sad - swipe right!' },
+        { image: require('../../assets/images/Sad.png'), emotion: '', correctSide: 'left', hint: 'Look at the droopy eyes and downturned mouth' },
+        { image: IMAGES.angry_female_3, emotion: '', correctSide: 'left', hint: 'See the worried expression and tense brows' },
+        { image: require('../../assets/images/Happy.png'), emotion: '', correctSide: 'right', hint: 'Notice the bright, cheerful expression' },
       ],
       mixed: [
-        { image: require('../../assets/images/Happy.png'), emotion: 'Happy', correctSide: 'right', hint: 'Happy is positive - swipe right!' },
-        { image: require('../../assets/images/Sad.png'), emotion: 'Sad', correctSide: 'left', hint: 'Sad is negative - swipe left!' },
-        { image: IMAGES.angry_female_1, emotion: 'Angry', correctSide: 'left', hint: 'Angry is negative - swipe left!' },
-        { image: IMAGES.angry_male_1, emotion: 'Mad', correctSide: 'left', hint: 'Mad is negative - swipe left!' },
-        { image: require('../../assets/images/Excited.png'), emotion: 'Excited', correctSide: 'right', hint: 'Excited is positive - swipe right!' },
+        { image: require('../../assets/images/Happy.png'), emotion: '', correctSide: 'right', hint: 'Look at the smile and bright eyes' },
+        { image: require('../../assets/images/Sad.png'), emotion: '', correctSide: 'left', hint: 'See the droopy eyes and sad mouth' },
+        { image: IMAGES.angry_female_1, emotion: '', correctSide: 'left', hint: 'Notice the frown and tense muscles' },
+        { image: IMAGES.angry_male_1, emotion: '', correctSide: 'left', hint: 'Look at the stern, angry expression' },
+        { image: require('../../assets/images/Excited.png'), emotion: '', correctSide: 'right', hint: 'See the wide smile and excited eyes' },
+        { image: require('../../assets/images/Surprised.png'), emotion: '', correctSide: 'right', hint: 'Notice the wide eyes and open mouth - usually positive surprise' },
+        { image: require('../../assets/images/Worried_real.png'), emotion: '', correctSide: 'left', hint: 'Look at the concerned, tense expression' },
+        { image: require('../../assets/images/TIred_real.png'), emotion: '', correctSide: 'left', hint: 'See the droopy, low-energy expression' },
       ]
     };
     return allQuestions[targetEmotion] || allQuestions.mixed;
@@ -58,23 +65,27 @@ export default function SwipeEmotionActivity({ navigation, route }) {
         
         if (isCorrect) {
           setScore(score + 1);
-          await TTS.speakFeedback('Correct!', true);
+          const feedback = ['Well done!', 'That\'s right!', 'Nice work!', 'Correct!', 'Great!'][Math.floor(Math.random() * 5)];
+          if (isTTSEnabled) await TTS.speakFeedback(feedback, true);
           
           if (currentQuestion < questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1);
             setAttempts(0);
+            setShowHintMessage(false);
             pan.setValue({ x: 0, y: 0 });
           } else {
             navigation.navigate('LessonSummary', { 
-              score, 
+              score: score + 1, 
               totalQuestions: questions.length, 
-              lessonTitle: 'Swipe Challenge',
-              source: emotion ? 'activities' : 'lessons'
+              lessonTitle: route.params?.source === 'lessons' ? 'Lesson 2' : 'Swipe Challenge',
+              source: route.params?.source || (emotion ? 'activities' : 'lessons')
             });
           }
         } else {
-          await TTS.speakFeedback('Try again!', false);
-          await TTS.speakHint(questions[currentQuestion].hint);
+          if (isTTSEnabled) {
+            await TTS.speakFeedback('Try again', false);
+            await TTS.speakHint(questions[currentQuestion].hint);
+          }
           setShowHintMessage(true);
           setAttempts(attempts + 1);
           Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
@@ -91,6 +102,7 @@ export default function SwipeEmotionActivity({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TTSToggle />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
         <View style={styles.topBar}>
@@ -138,11 +150,9 @@ export default function SwipeEmotionActivity({ navigation, route }) {
         <View style={styles.sidesContainer}>
           <View style={styles.leftSide}>
             <Text style={styles.sideLabel}>Negative</Text>
-            <Text style={styles.sideSubtext}>Sad, Angry, Scared</Text>
           </View>
           <View style={styles.rightSide}>
             <Text style={styles.sideLabel}>Positive</Text>
-            <Text style={styles.sideSubtext}>Happy, Excited, Surprised</Text>
           </View>
         </View>
 
@@ -151,7 +161,10 @@ export default function SwipeEmotionActivity({ navigation, route }) {
           {...panResponder.panHandlers}
         >
           <Image source={questions[currentQuestion].image} style={styles.emotionImage} resizeMode="contain" />
-          <Text style={styles.emotionText}>{questions[currentQuestion].emotion}</Text>
+          {questions[currentQuestion].emotion && <Text style={styles.emotionText}>{questions[currentQuestion].emotion}</Text>}
+          {showHintMessage && generateVisualCues(questions[currentQuestion].hint).map((cue, index) => (
+            <View key={index} style={getCueStyle(cue)} />
+          ))}
         </Animated.View>
 
         <Text style={styles.instruction}>← Negative | Positive →</Text>

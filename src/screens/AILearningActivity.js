@@ -11,12 +11,12 @@ export default function AILearningActivity({ navigation, route }) {
   const [generatedLesson, setGeneratedLesson] = useState(null);
 
   const predefinedTopics = [
-    'Understanding facial expressions',
-    'Body language basics',
-    'Social situations',
-    'Managing emotions',
-    'Communication skills',
-    'Friendship building'
+    'Faces',
+    'Body language',
+    'Social cues',
+    'Emotions',
+    'Communication',
+    'Friends'
   ];
 
   const handleTopicSelect = (topic) => {
@@ -51,22 +51,22 @@ export default function AILearningActivity({ navigation, route }) {
         {
           id: 1,
           type: 'picture_emotion',
-          title: 'Identify Happy Faces',
-          description: 'Look at photos and identify happy expressions',
+          title: 'Happy Photos',
+          description: 'Find happy faces',
           emotion: 'happy'
         },
         {
           id: 2,
           type: 'video_emotion', 
-          title: 'Happy Video Analysis',
-          description: 'Watch videos showing happiness',
+          title: 'Happy Videos',
+          description: 'Watch happy clips',
           emotion: 'happy'
         },
         {
           id: 3,
           type: 'matching',
-          title: 'Match Happy Situations',
-          description: 'Connect happy faces with situations that cause happiness'
+          title: 'Happy Match',
+          description: 'Match happy faces'
         }
       ];
     } else if (topicLower.includes('sad') || topicLower.includes('sadness')) {
@@ -74,15 +74,15 @@ export default function AILearningActivity({ navigation, route }) {
         {
           id: 1,
           type: 'picture_emotion',
-          title: 'Recognize Sadness',
-          description: 'Identify sad expressions in photos',
+          title: 'Sad Photos',
+          description: 'Find sad faces',
           emotion: 'sad'
         },
         {
           id: 2,
           type: 'video_emotion',
-          title: 'Understanding Sadness',
-          description: 'Watch and analyze sad emotions in videos',
+          title: 'Sad Videos',
+          description: 'Watch sad clips',
           emotion: 'sad'
         }
       ];
@@ -91,15 +91,15 @@ export default function AILearningActivity({ navigation, route }) {
         {
           id: 1,
           type: 'picture_emotion',
-          title: 'Spot Anger Signs',
-          description: 'Learn to identify angry facial expressions',
+          title: 'Angry Photos',
+          description: 'Find angry faces',
           emotion: 'angry'
         },
         {
           id: 2,
           type: 'video_emotion',
-          title: 'Anger in Action',
-          description: 'Observe anger expressions in video clips',
+          title: 'Angry Videos',
+          description: 'Watch angry clips',
           emotion: 'angry'
         }
       ];
@@ -109,15 +109,15 @@ export default function AILearningActivity({ navigation, route }) {
         {
           id: 1,
           type: 'picture_emotion',
-          title: `Learn about ${topic}`,
-          description: `Practice identifying ${topic} in images`,
+          title: `${topic} Photos`,
+          description: `Find ${topic}`,
           emotion: 'mixed'
         },
         {
           id: 2,
           type: 'video_emotion',
-          title: `${topic} in Videos`,
-          description: `Watch videos related to ${topic}`,
+          title: `${topic} Videos`,
+          description: `Watch ${topic}`,
           emotion: 'mixed'
         }
       ];
@@ -149,15 +149,9 @@ export default function AILearningActivity({ navigation, route }) {
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>AI Learning</Text>
-            <SpeakerButton 
-              text="Choose what you want to learn and AI will create a personalized lesson for you" 
-              type="instruction" 
-              size={18} 
-              style={styles.speakerButton}
-            />
           </View>
 
-          <Text style={styles.sectionTitle}>Choose a topic:</Text>
+          <Text style={styles.sectionTitle}>Pick topic:</Text>
           
           <View style={styles.topicsContainer}>
             {predefinedTopics.map((topic, index) => (
@@ -179,11 +173,11 @@ export default function AILearningActivity({ navigation, route }) {
             ))}
           </View>
 
-          <Text style={styles.orText}>Or enter your own:</Text>
+          <Text style={styles.orText}>Or type:</Text>
           
           <TextInput
             style={styles.textInput}
-            placeholder="What would you like to learn about?"
+            placeholder="Topic?"
             value={customTopic}
             onChangeText={setCustomTopic}
             multiline
@@ -195,7 +189,7 @@ export default function AILearningActivity({ navigation, route }) {
             disabled={isGenerating}
           >
             <Text style={styles.generateButtonText}>
-              {isGenerating ? 'Generating...' : 'Generate Lesson'}
+              {isGenerating ? 'Creating...' : 'Create Lesson'}
             </Text>
           </TouchableOpacity>
 
@@ -203,7 +197,7 @@ export default function AILearningActivity({ navigation, route }) {
             <View style={styles.lessonContainer}>
               <Text style={styles.lessonTitle}>{generatedLesson.title}</Text>
               
-              <Text style={styles.activitiesTitle}>Choose an activity:</Text>
+              <Text style={styles.activitiesTitle}>Pick activity:</Text>
               {generatedLesson.activities.map((activity, index) => (
                 <TouchableOpacity 
                   key={index} 

@@ -8,13 +8,18 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Switch,
 } from 'react-native';
 import { COLORS, SIZES, FONTS, SHADOWS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
+import { useTTS } from '../contexts/TTSContext';
+import { useRewards } from '../contexts/RewardContext';
 
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen({ navigation }) {
+  const { isTTSEnabled, toggleTTS } = useTTS();
+  const { badges, streak } = useRewards();
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -31,17 +36,28 @@ export default function ProfileScreen({ navigation }) {
         {/* Stats row */}
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
-            <Text style={styles.statNumber}>52</Text>
+            <Text style={styles.statNumber}>{streak}</Text>
             <Text style={styles.statLabel}>Day Streak</Text>
           </View>
           <View style={styles.statBox}>
-            <Text style={styles.statNumber}>12</Text>
+            <Text style={styles.statNumber}>10</Text>
             <Text style={styles.statLabel}>Lessons</Text>
           </View>
           <View style={styles.statBox}>
-            <Text style={styles.statNumber}>5</Text>
+            <Text style={styles.statNumber}>{badges.length}</Text>
             <Text style={styles.statLabel}>Badges</Text>
           </View>
+        </View>
+
+        {/* TTS Toggle */}
+        <View style={styles.settingItem}>
+          <Text style={styles.settingText}>Text to Speech</Text>
+          <Switch
+            value={isTTSEnabled}
+            onValueChange={toggleTTS}
+            trackColor={{ false: COLORS.lightGrey, true: COLORS.darkBlue }}
+            thumbColor={isTTSEnabled ? COLORS.white : COLORS.grey}
+          />
         </View>
 
         {/* Buttons / actions */}
@@ -54,9 +70,9 @@ export default function ProfileScreen({ navigation }) {
 
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => navigation.navigate('Achievements')}
+          onPress={() => navigation.navigate('BadgesScreen')}
         >
-          <Text style={styles.actionText}>Achievements</Text>
+          <Text style={styles.actionText}>My Badges</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -144,5 +160,22 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     backgroundColor: COLORS.pink,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '90%',
+    backgroundColor: COLORS.white,
+    borderRadius: SIZES.radius,
+    paddingVertical: SIZES.padding,
+    paddingHorizontal: SIZES.padding,
+    marginVertical: SIZES.margin / 2,
+    ...SHADOWS.small,
+  },
+  settingText: {
+    fontSize: SIZES.large,
+    color: COLORS.black,
+    ...FONTS.medium,
   },
 });

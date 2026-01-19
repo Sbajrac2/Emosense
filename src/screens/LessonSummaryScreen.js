@@ -8,42 +8,36 @@ import {
   Dimensions,
 } from 'react-native';
 import SimpleIcon from '../components/SimpleIcon';
+import TTSToggle from '../components/TTSToggle';
 import { COLORS, SIZES, FONTS, SHADOWS } from '../constants/theme';
 
 const { width } = Dimensions.get('window');
 
 export default function LessonSummaryScreen({ navigation, route }) {
-  const { score, totalQuestions, lessonTitle, source } = route.params || { score: 4, totalQuestions: 4, lessonTitle: 'Feeling Words', source: 'lessons' };
+  const { score, totalQuestions, lessonTitle, source, activityId } = route.params || { score: 4, totalQuestions: 4, lessonTitle: 'Feeling Words', source: 'lessons' };
   const percentage = Math.round((score / totalQuestions) * 100);
   const streak = 52; // This could be stored in app state
 
   const handleDone = () => {
-    if (source === 'activities') {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'ActivitiesMain' }],
-      });
-    } else {
-      // Extract lesson number from title and unlock next lesson
-      const lessonMatch = lessonTitle.match(/Lesson (\d+)/);
+    if (source === 'lessons') {
+      // Extract lesson number and unlock next lesson
+      const lessonMatch = lessonTitle.match(/(\d+)/);
       const completedLessonNumber = lessonMatch ? parseInt(lessonMatch[1]) : 1;
-      const nextLesson = completedLessonNumber + 1;
       
-      navigation.reset({
-        index: 0,
-        routes: [{ 
-          name: 'LessonsMain', 
-          params: { lessonCompleted: nextLesson }
-        }],
-      });
+      // Go back to lessons screen with completion data
+      navigation.navigate('LessonsMain', { lessonCompleted: completedLessonNumber });
+    } else {
+      // Navigate to Activities tab and then to ActivitiesMain
+      navigation.navigate('Activities', { screen: 'ActivitiesMain' });
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      <TTSToggle />
       <View style={styles.content}>
         {/* Title */}
-        <Text style={styles.title}>Lesson Summary</Text>
+        <Text style={styles.title}>Lessons</Text>
 
         {/* Main Summary Card */}
         <View style={styles.summaryCard}>
@@ -71,7 +65,7 @@ export default function LessonSummaryScreen({ navigation, route }) {
                />
             </View>
             <View style={styles.progressText}>
-              <Text style={styles.progressLabel}>{lessonTitle}: {score}</Text>
+              <Text style={styles.progressLabel}>{source === 'lessons' ? lessonTitle?.match(/\d+/)?.[0] || '1' : lessonTitle}: {score}</Text>
               <Text style={styles.progressPercentage}>{percentage}%</Text>
             </View>
           </View>
@@ -84,7 +78,13 @@ export default function LessonSummaryScreen({ navigation, route }) {
         </View>
 
         {/* Done Button */}
-        <TouchableOpacity style={styles.doneButton} onPress={handleDone}>
+        <TouchableOpacity 
+          style={styles.doneButton} 
+          onPress={() => {
+            console.log('Done button pressed');
+            handleDone();
+          }}
+        >
           <Text style={styles.doneButtonText}>Done</Text>
         </TouchableOpacity>
       </View>

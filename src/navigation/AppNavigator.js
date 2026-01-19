@@ -16,6 +16,14 @@ import VideoEmotionActivity from '../screens/VideoEmotionActivity';
 import SwipeEmotionActivity from '../screens/SwipeEmotionActivity';
 import EmotionMatchingActivity from '../screens/EmotionMatchingActivity';
 import AILearningActivity from '../screens/AILearningActivity';
+import SliderEmotionActivity from '../screens/SliderEmotionActivity';
+import ChooseAllActivity from '../screens/ChooseAllActivity';
+import EmotionSortActivity from '../screens/EmotionSortActivity';
+import EmotionStoryActivity from '../screens/EmotionStoryActivity';
+import BodyLanguageActivity from '../screens/BodyLanguageActivity';
+import EmotionIntensityActivity from '../screens/EmotionIntensityActivity';
+import BuildAFaceActivity from '../screens/BuildAFaceActivity';
+import BadgesScreen from '../screens/BadgesScreen';
 
 import { COLORS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
@@ -35,6 +43,14 @@ function ActivityStackNavigator() {
       <ActivityStack.Screen name="SwipeEmotionActivity" component={SwipeEmotionActivity} />
       <ActivityStack.Screen name="EmotionMatchingActivity" component={EmotionMatchingActivity} />
       <ActivityStack.Screen name="AILearningActivity" component={AILearningActivity} />
+      <ActivityStack.Screen name="SliderEmotionActivity" component={SliderEmotionActivity} />
+      <ActivityStack.Screen name="ChooseAllActivity" component={ChooseAllActivity} />
+      <ActivityStack.Screen name="EmotionSortActivity" component={EmotionSortActivity} />
+      <ActivityStack.Screen name="EmotionStoryActivity" component={EmotionStoryActivity} />
+      <ActivityStack.Screen name="BodyLanguageActivity" component={BodyLanguageActivity} />
+      <ActivityStack.Screen name="EmotionIntensityActivity" component={EmotionIntensityActivity} />
+      <ActivityStack.Screen name="BuildAFaceActivity" component={BuildAFaceActivity} />
+
       <ActivityStack.Screen name="LessonSummary" component={LessonSummaryScreen} />
     </ActivityStack.Navigator>
   );
@@ -52,6 +68,14 @@ function LessonStackNavigator() {
       <LessonStack.Screen name="SwipeEmotionActivity" component={SwipeEmotionActivity} />
       <LessonStack.Screen name="EmotionMatchingActivity" component={EmotionMatchingActivity} />
       <LessonStack.Screen name="AILearningActivity" component={AILearningActivity} />
+      <LessonStack.Screen name="SliderEmotionActivity" component={SliderEmotionActivity} />
+      <LessonStack.Screen name="ChooseAllActivity" component={ChooseAllActivity} />
+      <LessonStack.Screen name="EmotionSortActivity" component={EmotionSortActivity} />
+      <LessonStack.Screen name="EmotionStoryActivity" component={EmotionStoryActivity} />
+      <LessonStack.Screen name="BodyLanguageActivity" component={BodyLanguageActivity} />
+      <LessonStack.Screen name="EmotionIntensityActivity" component={EmotionIntensityActivity} />
+      <LessonStack.Screen name="BuildAFaceActivity" component={BuildAFaceActivity} />
+
       <LessonStack.Screen name="LessonSummary" component={LessonSummaryScreen} />
     </LessonStack.Navigator>
   );
@@ -112,6 +136,7 @@ export default function AppNavigator() {
       <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="MainTabs" component={TabNavigator} />
+        <Stack.Screen name="BadgesScreen" component={BadgesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

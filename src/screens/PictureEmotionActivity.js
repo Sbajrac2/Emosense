@@ -1,20 +1,30 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
+
 import SpeakerButton from '../components/SpeakerButton';
+import TTSToggle from '../components/TTSToggle';
+import SimpleSlider from '../components/SimpleSlider';
+import VisualCue from '../components/VisualCue';
+// import AnimatedHighlight from '../components/AnimatedHighlight';
 import { COLORS, SIZES, FONTS, SHADOWS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
 import TTS from '../utils/textToSpeech';
+import { useTTS } from '../contexts/TTSContext';
+import { generateVisualCues, getCueStyle } from '../utils/visualCueHelper';
+// import { getRandomFeedback } from '../utils/feedbackMessages';
 
 const { width } = Dimensions.get('window');
 
 export default function PictureEmotionActivity({ navigation, route }) {
   const [currentTask, setCurrentTask] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [sliderValue, setSliderValue] = useState(50);
   const [score, setScore] = useState(0);
   const [showHelpMessage, setShowHelpMessage] = useState(false);
   const [showHintMessage, setShowHintMessage] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [showSecondChance, setShowSecondChance] = useState(false);
+  const { isTTSEnabled } = useTTS();
   
   const getTasksForEmotion = (targetEmotion) => {
     const allTasks = {
@@ -30,9 +40,10 @@ export default function PictureEmotionActivity({ navigation, route }) {
         {
           image: require('../../assets/images/Happ2_real.png'),
           question: 'How happy?',
-          fullQuestion: 'How happy does this person look?',
-          correctAnswer: 'Very Happy',
-          options: ['Slightly Happy', 'Very Happy', 'Not Happy', 'Sad'],
+          fullQuestion: 'Use the slider to rate how happy this person looks',
+          type: 'slider',
+          correctRange: [70, 100],
+          labels: ['😢', '😐', '😊'],
           hint: 'Notice the big smile and joyful expression'
         },
         {
@@ -74,9 +85,10 @@ export default function PictureEmotionActivity({ navigation, route }) {
         {
           image: IMAGES.angry_female_2,
           question: 'How angry?',
-          fullQuestion: 'How angry does this person appear?',
-          correctAnswer: 'Very Angry',
-          options: ['Slightly Angry', 'Very Angry', 'Not Angry', 'Happy'],
+          fullQuestion: 'Use the slider to rate how angry this person appears',
+          type: 'slider',
+          correctRange: [70, 100],
+          labels: ['😌', '😠', '🤬'],
           hint: 'Look at the intensity of the angry expression'
         },
         {
@@ -161,31 +173,72 @@ export default function PictureEmotionActivity({ navigation, route }) {
     setAttempts(attempts + 1);
     
     if (answer === tasks[currentTask].correctAnswer) {
-      await TTS.speakFeedback('Excellent choice!', true);
+      const feedback = ['Well done!', 'That\'s right!', 'Nice work!', 'Correct!', 'Great!'][Math.floor(Math.random() * 5)];
+      if (isTTSEnabled) await TTS.speakFeedback(feedback, true);
       setShowSecondChance(false);
     } else {
       if (attempts === 0) {
-        await TTS.speakFeedback('Not quite right. Here\'s a hint!', false);
+        if (isTTSEnabled) await TTS.speakFeedback('Try again', false);
         setShowHintMessage(true);
         setShowSecondChance(true);
         setTimeout(() => {
           setSelectedAnswer(null);
-        }, 2000);
+          setShowHintMessage(false);
+        }, 5000);
       } else {
-        await TTS.speakFeedback('Good try! Let\'s move on', false);
+        const feedback = ['Nice try', 'Keep trying', 'Almost there', 'Good effort'][Math.floor(Math.random() * 4)];
+        if (isTTSEnabled) await TTS.speakFeedback(feedback, false);
+        setShowSecondChance(false);
+      }
+    }
+  };
+
+
+
+  const handleSliderSubmit = async () => {
+    if (selectedAnswer !== null && !showSecondChance) return;
+    
+    setAttempts(attempts + 1);
+    const [min, max] = tasks[currentTask].correctRange;
+    const isCorrect = sliderValue >= min && sliderValue <= max;
+    
+    if (isCorrect) {
+      setSelectedAnswer('correct');
+      const feedback = ['Well done!', 'That\'s right!', 'Nice work!', 'Correct!', 'Great!'][Math.floor(Math.random() * 5)];
+      if (isTTSEnabled) await TTS.speakFeedback(feedback, true);
+      setShowSecondChance(false);
+    } else {
+      if (attempts === 0) {
+        if (isTTSEnabled) await TTS.speakFeedback('Try again', false);
+        setShowHintMessage(true);
+        setShowSecondChance(true);
+        setTimeout(() => {
+          setShowHintMessage(false);
+        }, 5000);
+      } else {
+        setSelectedAnswer('incorrect');
+        if (isTTSEnabled) await TTS.speakFeedback('Nice try', false);
         setShowSecondChance(false);
       }
     }
   };
 
   const handleNext = () => {
-    if (selectedAnswer === tasks[currentTask].correctAnswer) {
+    const currentTaskData = tasks[currentTask];
+    
+    if (currentTaskData.type === 'slider') {
+      const [min, max] = currentTaskData.correctRange;
+      if (sliderValue >= min && sliderValue <= max) {
+        setScore(score + 1);
+      }
+    } else if (selectedAnswer === currentTaskData.correctAnswer) {
       setScore(score + 1);
     }
 
     if (currentTask < tasks.length - 1) {
       setCurrentTask(currentTask + 1);
       setSelectedAnswer(null);
+      setSliderValue(50);
       setAttempts(0);
       setShowSecondChance(false);
       setShowHintMessage(false);
@@ -194,8 +247,8 @@ export default function PictureEmotionActivity({ navigation, route }) {
       navigation.navigate('LessonSummary', { 
         score, 
         totalQuestions: tasks.length, 
-        lessonTitle: 'Picture Emotions',
-        source: route.params?.emotion ? 'activities' : 'lessons'
+        lessonTitle: route.params?.source === 'lessons' ? 'Lesson 3' : 'Picture Emotions',
+        source: route.params?.source || (route.params?.emotion ? 'activities' : 'lessons')
       });
     }
   };
@@ -204,8 +257,11 @@ export default function PictureEmotionActivity({ navigation, route }) {
     navigation.navigate('MainTabs');
   };
 
+
+
   return (
     <SafeAreaView style={styles.container}>
+      <TTSToggle />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
         <View style={styles.topBar}>
@@ -226,12 +282,6 @@ export default function PictureEmotionActivity({ navigation, route }) {
           <View style={[styles.popupWrapper, { top: 60, left: 20 }]}>
             <View style={styles.hintContainer}>
               <Text style={styles.helpText}>{tasks[currentTask].hint}</Text>
-              <SpeakerButton 
-                text={tasks[currentTask].hint} 
-                type="hint" 
-                size={16} 
-                style={styles.speakerButton}
-              />
             </View>
             <TouchableOpacity onPress={() => setShowHintMessage(false)} style={styles.closeButton}>
               <Text style={styles.closeText}>✕</Text>
@@ -243,12 +293,6 @@ export default function PictureEmotionActivity({ navigation, route }) {
           <View style={[styles.popupWrapper, { top: 60, right: 20 }]}>
             <View style={styles.hintContainer}>
               <Text style={styles.helpText}>Look at faces</Text>
-              <SpeakerButton 
-                text="Look at facial expressions to identify emotions" 
-                type="instruction" 
-                size={16} 
-                style={styles.speakerButton}
-              />
             </View>
             <TouchableOpacity onPress={() => setShowHelpMessage(false)} style={styles.closeButton}>
               <Text style={styles.closeText}>✕</Text>
@@ -259,36 +303,51 @@ export default function PictureEmotionActivity({ navigation, route }) {
         <Text style={styles.progress}>{currentTask + 1}/{tasks.length}</Text>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>{tasks[currentTask].question}</Text>
-          <SpeakerButton 
-            text={tasks[currentTask].fullQuestion} 
-            type="question" 
-            size={18} 
-            style={styles.speakerButton}
-          />
         </View>
         
         <View style={styles.imageContainer}>
           <Image source={tasks[currentTask].image} style={styles.questionImage} resizeMode="contain" />
-        </View>
-
-        <View style={styles.optionsContainer}>
-          {tasks[currentTask].options.map((option, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.optionButton,
-                selectedAnswer === option && option === tasks[currentTask].correctAnswer && styles.correctOption,
-                selectedAnswer === option && option !== tasks[currentTask].correctAnswer && styles.incorrectOption,
-              ]}
-              onPress={() => handleAnswerSelect(option)}
-              disabled={selectedAnswer !== null && !showSecondChance}
-            >
-              <View style={styles.optionContent}>
-                <Text style={styles.optionText}>{option}</Text>
-              </View>
-            </TouchableOpacity>
+          {showHintMessage && generateVisualCues(tasks[currentTask].hint).map((cue, index) => (
+            <View key={index} style={getCueStyle(cue)} />
           ))}
         </View>
+
+        {tasks[currentTask].type === 'slider' ? (
+          <View style={styles.sliderContainer}>
+            <SimpleSlider
+              value={sliderValue}
+              onValueChange={setSliderValue}
+              labels={tasks[currentTask].labels}
+              disabled={selectedAnswer !== null && !showSecondChance}
+            />
+            <TouchableOpacity
+              style={[styles.submitButton, (selectedAnswer !== null && !showSecondChance) && styles.disabledButton]}
+              onPress={handleSliderSubmit}
+              disabled={selectedAnswer !== null && !showSecondChance}
+            >
+              <Text style={styles.submitButtonText}>Submit</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.optionsContainer}>
+            {tasks[currentTask].options.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.optionButton,
+                  selectedAnswer === option && option === tasks[currentTask].correctAnswer && styles.correctOption,
+                  selectedAnswer === option && option !== tasks[currentTask].correctAnswer && styles.incorrectOption,
+                ]}
+                onPress={() => handleAnswerSelect(option)}
+                disabled={selectedAnswer !== null && !showSecondChance}
+              >
+                <View style={styles.optionContent}>
+                  <Text style={styles.optionText}>{option}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         <TouchableOpacity
           style={[styles.nextButton, (!selectedAnswer || showSecondChance) && styles.disabledButton]}
@@ -340,5 +399,9 @@ const styles = StyleSheet.create({
   hintContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   titleContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 30 },
   speakerButton: { marginLeft: 8 },
+  sliderContainer: { width: '100%', alignItems: 'center', marginBottom: 30 },
+  submitButton: { backgroundColor: COLORS.orange, borderRadius: SIZES.radius, paddingVertical: SIZES.padding, paddingHorizontal: 40, marginTop: 20, ...SHADOWS.small },
+  submitButtonText: { fontSize: SIZES.large, color: COLORS.white, fontWeight: 'bold' },
+
 
 });

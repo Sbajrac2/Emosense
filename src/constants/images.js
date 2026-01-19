@@ -55,4 +55,7 @@ export const IMAGES = {
     angry_male_4: require('../../assets/images/Angry_male_asian/b4.png'),
     angry_male_5: require('../../assets/images/Angry_male_asian/b5.png'),
     angry_male_6: require('../../assets/images/Angry_male_asian/b6.png'),
+    
+    // Happy real image
+    happy_real: require('../../assets/images/Happy_real.png'),
   };

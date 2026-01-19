@@ -50,7 +50,8 @@ export default function MultiTaskActivity({ navigation }) {
       navigation.navigate('LessonSummary', { 
         score, 
         totalQuestions: tasks.length, 
-        lessonTitle: 'Multi-Task Activity' 
+        lessonTitle: 'Multi-Task Activity',
+        source: 'activities'
       });
     }
   };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,11 @@ import {
   Image,
 } from 'react-native';
 import SpeakerButton from '../components/SpeakerButton';
+import TTSToggle from '../components/TTSToggle';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
 import TTS from '../utils/textToSpeech';
+import { useTTS } from '../contexts/TTSContext';
 
 const getEmotionColor = (emotion) => {
   switch (emotion) {
@@ -25,11 +27,13 @@ const getEmotionColor = (emotion) => {
 };
 
 export default function ActivitiesScreen({ navigation }) {
+  const { isTTSEnabled } = useTTS();
+  const [completedActivityIds, setCompletedActivityIds] = useState([]);
   const emotionActivities = {
     happy: [
       {
         id: 1,
-        title: 'H1',
+        title: 'Photos',
         description: 'Happy Photos',
         fullDescription: 'Identify Happy emotions in photos',
         type: 'picture_emotion',
@@ -39,7 +43,7 @@ export default function ActivitiesScreen({ navigation }) {
       },
       {
         id: 2,
-        title: 'H2',
+        title: 'Videos',
         description: 'Happy Videos',
         fullDescription: 'Watch videos and find happy moments',
         type: 'video_emotion',
@@ -49,7 +53,7 @@ export default function ActivitiesScreen({ navigation }) {
       },
       {
         id: 3,
-        title: 'H3',
+        title: 'Matching',
         description: 'Happy Matching',
         fullDescription: 'Match happy faces with situations',
         type: 'emotion_matching',
@@ -59,10 +63,10 @@ export default function ActivitiesScreen({ navigation }) {
       },
       {
         id: 4,
-        title: 'H4',
-        description: 'Happy Levels',
-        fullDescription: 'Identify different levels of happiness',
-        type: 'picture_emotion',
+        title: 'Swipe',
+        description: 'Happy Swipe',
+        fullDescription: 'Swipe through happy emotions',
+        type: 'swipe_emotion',
         emotion: 'happy',
         assignedBy: 'Mr. Mike',
         avatar: IMAGES.photo_man,
@@ -71,7 +75,7 @@ export default function ActivitiesScreen({ navigation }) {
     sad: [
       {
         id: 5,
-        title: 'S1',
+        title: 'Photos',
         description: 'Sad Photos',
         fullDescription: 'Recognize sad emotions in pictures',
         type: 'picture_emotion',
@@ -81,7 +85,7 @@ export default function ActivitiesScreen({ navigation }) {
       },
       {
         id: 6,
-        title: 'S2',
+        title: 'Videos',
         description: 'Sad Videos',
         fullDescription: 'Identify sadness in video clips',
         type: 'video_emotion',
@@ -91,7 +95,7 @@ export default function ActivitiesScreen({ navigation }) {
       },
       {
         id: 7,
-        title: 'S3',
+        title: 'Matching',
         description: 'Sad Situations',
         fullDescription: 'Match sad emotions with causes',
         type: 'emotion_matching',
@@ -103,7 +107,7 @@ export default function ActivitiesScreen({ navigation }) {
     angry: [
       {
         id: 8,
-        title: 'A1',
+        title: 'Photos',
         description: 'Angry Photos',
         fullDescription: 'Spot angry expressions in photos',
         type: 'picture_emotion',
@@ -113,7 +117,7 @@ export default function ActivitiesScreen({ navigation }) {
       },
       {
         id: 9,
-        title: 'A2',
+        title: 'Videos',
         description: 'Angry Videos',
         fullDescription: 'Recognize anger in video clips',
         type: 'video_emotion',
@@ -123,10 +127,10 @@ export default function ActivitiesScreen({ navigation }) {
       },
       {
         id: 10,
-        title: 'A3',
-        description: 'Anger Management',
-        fullDescription: 'Learn about managing angry feelings',
-        type: 'emotion_matching',
+        title: 'Swipe',
+        description: 'Angry Swipe',
+        fullDescription: 'Swipe through angry emotions',
+        type: 'swipe_emotion',
         emotion: 'angry',
         assignedBy: 'Mr. Mike',
         avatar: IMAGES.photo_man,
@@ -135,7 +139,7 @@ export default function ActivitiesScreen({ navigation }) {
     surprised: [
       {
         id: 11,
-        title: 'Su1',
+        title: 'Photos',
         description: 'Surprise Photos',
         fullDescription: 'Find surprised faces in pictures',
         type: 'picture_emotion',
@@ -145,7 +149,7 @@ export default function ActivitiesScreen({ navigation }) {
       },
       {
         id: 12,
-        title: 'Su2',
+        title: 'Videos',
         description: 'Surprise Videos',
         fullDescription: 'Spot surprise reactions in videos',
         type: 'video_emotion',
@@ -157,7 +161,7 @@ export default function ActivitiesScreen({ navigation }) {
     mixed: [
       {
         id: 13,
-        title: 'M1',
+        title: 'Photos',
         description: 'Mixed Emotions',
         fullDescription: 'Identify various emotions together',
         type: 'picture_emotion',
@@ -167,7 +171,7 @@ export default function ActivitiesScreen({ navigation }) {
       },
       {
         id: 14,
-        title: 'M2',
+        title: 'Videos',
         description: 'Social Cues',
         fullDescription: 'Understand social emotional cues',
         type: 'video_emotion',
@@ -175,11 +179,61 @@ export default function ActivitiesScreen({ navigation }) {
         assignedBy: 'Mr. John',
         avatar: IMAGES.photo_boy,
       },
+      {
+        id: 16,
+        title: 'Sort Emotions',
+        description: 'Emotion Sorting',
+        fullDescription: 'Sort faces into emotion bins',
+        type: 'emotion_sort',
+        emotion: 'mixed',
+        assignedBy: 'Mrs. Kate',
+        avatar: IMAGES.photo_woman,
+      },
+      {
+        id: 17,
+        title: 'Story Time',
+        description: 'Emotion Stories',
+        fullDescription: 'Complete emotion story sequences',
+        type: 'emotion_story',
+        emotion: 'mixed',
+        assignedBy: 'Ms. Lisa',
+        avatar: IMAGES.photo_girl,
+      },
+      {
+        id: 18,
+        title: 'Body Detective',
+        description: 'Body Language',
+        fullDescription: 'Identify emotions from body language',
+        type: 'body_language',
+        emotion: 'mixed',
+        assignedBy: 'Mr. John',
+        avatar: IMAGES.photo_boy,
+      },
+      {
+        id: 19,
+        title: 'Intensity Order',
+        description: 'Emotion Intensity',
+        fullDescription: 'Order emotions by intensity',
+        type: 'emotion_intensity',
+        emotion: 'mixed',
+        assignedBy: 'Mrs. Kate',
+        avatar: IMAGES.photo_woman,
+      },
+      {
+        id: 20,
+        title: 'Build-A-Face',
+        description: 'Face Builder',
+        fullDescription: 'Build faces to match emotions',
+        type: 'build_face',
+        emotion: 'mixed',
+        assignedBy: 'Mr. Mike',
+        avatar: IMAGES.photo_man,
+      },
     ],
     ai: [
       {
         id: 15,
-        title: 'AI',
+        title: 'AI Learning',
         description: 'AI Learning',
         fullDescription: 'Learn with AI personalized lessons',
         type: 'ai_learning',
@@ -190,40 +244,57 @@ export default function ActivitiesScreen({ navigation }) {
     ],
   };
 
-  const completedActivities = [
-    {
-      id: 9,
-      title: 'C1',
-      description: 'Basic Emotions',
-      fullDescription: 'Basic Emotion Recognition Activity',
-      type: 'picture_emotion',
-      emotion: 'mixed',
-      assignedBy: 'Ms. Lisa',
-      avatar: IMAGES.photo_girl,
-    },
-  ];
+  const getAllActivities = () => {
+    return Object.values(emotionActivities).flat();
+  };
+
+  const completedActivities = getAllActivities().filter(activity => 
+    completedActivityIds.includes(activity.id)
+  );
+
+  const activeActivities = getAllActivities().filter(activity => 
+    !completedActivityIds.includes(activity.id)
+  );
 
   const handleActivityPress = async (activity) => {
-    await TTS.speak(`Starting ${activity.fullDescription}`);
+    if (isTTSEnabled) await TTS.speak(`Starting ${activity.description}`);
     
     switch (activity.type) {
       case 'picture_emotion':
-        navigation.navigate('PictureEmotionActivity', { emotion: activity.emotion });
+        navigation.navigate('PictureEmotionActivity', { emotion: activity.emotion, activityId: activity.id });
         break;
       case 'video_emotion':
-        navigation.navigate('VideoEmotionActivity', { emotion: activity.emotion });
+        navigation.navigate('VideoEmotionActivity', { emotion: activity.emotion, activityId: activity.id });
         break;
       case 'swipe_emotion':
-        navigation.navigate('SwipeEmotionActivity', { emotion: activity.emotion });
+        navigation.navigate('SwipeEmotionActivity', { emotion: activity.emotion, activityId: activity.id });
         break;
       case 'emotion_matching':
-        navigation.navigate('EmotionMatchingActivity', { emotion: activity.emotion });
+        navigation.navigate('EmotionMatchingActivity', { emotion: activity.emotion, activityId: activity.id });
         break;
       case 'ai_learning':
-        navigation.navigate('AILearningActivity');
+        navigation.navigate('AILearningActivity', { activityId: activity.id });
+        break;
+      case 'slider_emotion':
+        navigation.navigate('SliderEmotionActivity', { emotion: activity.emotion, activityId: activity.id });
+        break;
+      case 'emotion_sort':
+        navigation.navigate('EmotionSortActivity', { emotion: activity.emotion, activityId: activity.id });
+        break;
+      case 'emotion_story':
+        navigation.navigate('EmotionStoryActivity', { emotion: activity.emotion, activityId: activity.id });
+        break;
+      case 'body_language':
+        navigation.navigate('BodyLanguageActivity', { emotion: activity.emotion, activityId: activity.id });
+        break;
+      case 'emotion_intensity':
+        navigation.navigate('EmotionIntensityActivity', { emotion: activity.emotion, activityId: activity.id });
+        break;
+      case 'build_face':
+        navigation.navigate('BuildAFaceActivity', { emotion: activity.emotion, activityId: activity.id });
         break;
       default:
-        navigation.navigate('MatchingExercise', { lessonId: activity.id });
+        navigation.navigate('MatchingExercise', { lessonId: activity.id, activityId: activity.id });
     }
   };
 
@@ -234,6 +305,12 @@ export default function ActivitiesScreen({ navigation }) {
       case 'swipe_emotion': return '👆';
       case 'emotion_matching': return '🔗';
       case 'emoji_matching': return '😊';
+      case 'slider_emotion': return '🎚️';
+      case 'emotion_sort': return '🗂️';
+      case 'emotion_story': return '📖';
+      case 'body_language': return '🕵️';
+      case 'emotion_intensity': return '📊';
+      case 'build_face': return '🎭';
       default: return '📝';
     }
   };
@@ -250,11 +327,6 @@ export default function ActivitiesScreen({ navigation }) {
           <View style={styles.activityTitleContainer}>
             <View style={styles.titleRow}>
               <Text style={styles.activityTitle}>{activity.title}</Text>
-              <SpeakerButton 
-                text={activity.fullDescription} 
-                size={14} 
-                style={styles.activitySpeaker}
-              />
             </View>
             <Text style={styles.activityDescription}>{activity.description}</Text>
           </View>
@@ -273,23 +345,35 @@ export default function ActivitiesScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TTSToggle />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Activities</Text>
           </View>
 
-          {Object.entries(emotionActivities).map(([emotion, activities]) => (
-            <View key={emotion} style={[styles.emotionSection, { backgroundColor: getEmotionColor(emotion) }]}>
-              <Text style={styles.sectionTitle}>{emotion.charAt(0).toUpperCase() + emotion.slice(1)} Activities</Text>
-              {activities.map(renderActivityCard)}
-            </View>
-          ))}
+          {Object.entries(emotionActivities).map(([emotion, activities]) => {
+            const activeEmotionActivities = activities.filter(activity => 
+              !completedActivityIds.includes(activity.id)
+            );
+            if (activeEmotionActivities.length === 0) return null;
+            
+            return (
+              <View key={emotion} style={[styles.emotionSection, { backgroundColor: getEmotionColor(emotion) }]}>
+                <Text style={styles.sectionTitle}>{emotion.charAt(0).toUpperCase() + emotion.slice(1)} Activities</Text>
+                {activeEmotionActivities.map(renderActivityCard)}
+              </View>
+            );
+          })}
 
-          <View style={styles.completedSection}>
-            <Text style={styles.sectionTitle}>Completed</Text>
-            {completedActivities.map(renderActivityCard)}
-          </View>
+          {completedActivities.length > 0 && (
+            <View style={styles.completedSection}>
+              <Text style={styles.sectionTitle}>Completed ({completedActivities.length})</Text>
+              {completedActivities.map(renderActivityCard)}
+            </View>
+          )}
+
+
         </View>
       </ScrollView>
     </SafeAreaView>

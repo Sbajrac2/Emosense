@@ -10,14 +10,16 @@ import {
   ScrollView,
 } from 'react-native';
 import SimpleIcon from '../components/SimpleIcon';
-import SpeakerButton from '../components/SpeakerButton';
+import TTSToggle from '../components/TTSToggle';
 import { COLORS, SIZES, FONTS, SHADOWS } from '../constants/theme';
 import { IMAGES } from '../constants/images';
 import TTS from '../utils/textToSpeech';
+import { useTTS } from '../contexts/TTSContext';
+// import { getRandomFeedback } from '../utils/feedbackMessages';
 
 const { width } = Dimensions.get('window');
 
-export default function MatchingExerciseScreen({ navigation }) {
+export default function MatchingExerciseScreen({ navigation, route }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [score, setScore] = useState(0);
@@ -25,12 +27,17 @@ export default function MatchingExerciseScreen({ navigation }) {
   const [showHintMessage, setShowHintMessage] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [showSecondChance, setShowSecondChance] = useState(false);
+  const { isTTSEnabled } = useTTS();
 
   const questions = [
     { id: 1, type: 'emoji', image: '😠', correctAnswer: 'Angry', options: ['Angry', 'Happy', 'Sad'], lessonTitle: 'Feelings', hint: 'Look at the eyebrows and mouth' },
     { id: 2, type: 'emoji', image: '😰', correctAnswer: 'Sad', options: ['Angry', 'Happy', 'Sad'], lessonTitle: 'Feelings', hint: 'Notice the downward mouth' },
     { id: 3, type: 'emoji', image: '😄', correctAnswer: 'Happy', options: ['Angry', 'Happy', 'Sad'], lessonTitle: 'Feelings', hint: 'See the big smile' },
     { id: 4, type: 'emoji', image: '😴', correctAnswer: 'Tired', options: ['Tired', 'Sad', 'Angry'], lessonTitle: 'Feelings', hint: 'Eyes are closed for sleep' },
+    { id: 5, type: 'emoji', image: '😮', correctAnswer: 'Surprised', options: ['Surprised', 'Happy', 'Angry'], lessonTitle: 'Feelings', hint: 'Look at the wide open mouth' },
+    { id: 6, type: 'emoji', image: '😟', correctAnswer: 'Worried', options: ['Worried', 'Happy', 'Excited'], lessonTitle: 'Feelings', hint: 'Notice the concerned expression' },
+    { id: 7, type: 'emoji', image: '🤔', correctAnswer: 'Thinking', options: ['Thinking', 'Sleeping', 'Angry'], lessonTitle: 'Feelings', hint: 'See the hand on the chin' },
+    { id: 8, type: 'emoji', image: '😊', correctAnswer: 'Content', options: ['Content', 'Sad', 'Angry'], lessonTitle: 'Feelings', hint: 'A gentle, peaceful smile' },
   ];
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -44,18 +51,19 @@ export default function MatchingExerciseScreen({ navigation }) {
     
     if (answer === currentQuestion.correctAnswer) {
       setScore(score + 1);
-      await TTS.speakFeedback('Great job!', true);
+      const feedback = ['Well done!', 'That\'s right!', 'Nice work!', 'Correct!', 'Great!'][Math.floor(Math.random() * 5)];
+      if (isTTSEnabled) await TTS.speakFeedback(feedback, true);
       setShowSecondChance(false);
     } else {
       if (attempts === 0) {
-        await TTS.speakFeedback('Not quite right. Here\'s a hint!', false);
+        if (isTTSEnabled) await TTS.speakFeedback('Try again', false);
         setShowHintMessage(true);
         setShowSecondChance(true);
         setTimeout(() => {
           setSelectedAnswer(null);
         }, 2000);
       } else {
-        await TTS.speakFeedback('Good try! Let\'s move on', false);
+        if (isTTSEnabled) await TTS.speakFeedback('Nice try', false);
         setShowSecondChance(false);
       }
     }
@@ -66,7 +74,9 @@ export default function MatchingExerciseScreen({ navigation }) {
       navigation.navigate('LessonSummary', { 
         score, 
         totalQuestions: questions.length,
-        lessonTitle: currentQuestion.lessonTitle 
+        lessonTitle: `Lesson ${route.params?.lessonId || 1}`,
+        source: route.params?.source || 'lessons',
+        lessonId: route.params?.lessonId
       });
     } else {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -89,6 +99,7 @@ export default function MatchingExerciseScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TTSToggle />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
         <View style={styles.topBar}>
@@ -104,12 +115,6 @@ export default function MatchingExerciseScreen({ navigation }) {
           <View style={[styles.popupWrapper, { top: 50, left: 20 }]}>
             <View style={styles.hintContainer}>
               <Text style={styles.helpText}>{currentQuestion.hint}</Text>
-              <SpeakerButton 
-                text={currentQuestion.hint} 
-                type="hint" 
-                size={16} 
-                style={styles.speakerButton}
-              />
             </View>
             <TouchableOpacity onPress={() => setShowHintMessage(false)} style={{ marginTop: 5, padding: 5 }}>
               <Text style={{ color: COLORS.darkBlue, fontWeight: 'bold' }}>✕</Text>
@@ -121,12 +126,6 @@ export default function MatchingExerciseScreen({ navigation }) {
           <View style={[styles.popupWrapper, { top: 50, right: 20 }]}>
             <View style={styles.hintContainer}>
               <Text style={styles.helpText}>Tap the feeling word</Text>
-              <SpeakerButton 
-                text="Tap the feeling word that matches the picture" 
-                type="instruction" 
-                size={16} 
-                style={styles.speakerButton}
-              />
             </View>
             <TouchableOpacity onPress={() => setShowHelpMessage(false)} style={{ marginTop: 5, padding: 5 }}>
               <Text style={{ color: COLORS.darkBlue, fontWeight: 'bold' }}>✕</Text>
@@ -149,12 +148,6 @@ export default function MatchingExerciseScreen({ navigation }) {
           </View>
           <View style={styles.instructionContainer}>
             <Text style={styles.instruction}>Match the feeling</Text>
-            <SpeakerButton 
-              text="Click on the feeling word that matches the picture" 
-              type="instruction" 
-              size={18} 
-              style={styles.speakerButton}
-            />
           </View>
           <View style={styles.optionsContainer}>
             {currentQuestion.options.map((option, index) => (
@@ -172,12 +165,6 @@ export default function MatchingExerciseScreen({ navigation }) {
                   <Text style={[styles.optionText, selectedAnswer === option && { color: COLORS.white }]}>
                     {option}
                   </Text>
-                  <SpeakerButton 
-                    text={option} 
-                    size={14} 
-                    color={selectedAnswer === option ? COLORS.white : COLORS.darkBlue}
-                    style={styles.optionSpeaker}
-                  />
                 </View>
               </TouchableOpacity>
             ))}
